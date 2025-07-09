@@ -89,11 +89,20 @@ main {
   color: #d32f2f;
   margin-bottom: 0.5rem;
   font-weight: bold;
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
 }
 
 .station .distance {
   font-size: 0.9rem;
   color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.station .date {
+  font-size: 0.8rem;
+  color: #777;
   margin-bottom: 0.5rem;
 }
 

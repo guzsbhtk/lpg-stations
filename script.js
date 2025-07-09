@@ -36,6 +36,7 @@ function parseStations(table) {
 
   const idxName = findIdx(["שם", "תחנה"]);
   const idxPrice = findIdx(["מחיר"]);
+  const idxDate = findIdx(["תאריך", "מעודכן"]);
   const idxCityCandidates = ["ישוב", "יישוב", "עיר"];
   let idxCity = findIdx(idxCityCandidates);
   if (idxCity === -1 && cols.length > 1) {
@@ -48,6 +49,42 @@ function parseStations(table) {
     throw new Error("לא נמצאו כל העמודות הנדרשות בגיליון");
   }
 
+  function formatDateCell(cell) {
+    if (!cell) return "";
+    const raw = cell.f || cell.v;
+
+    let month, year;
+
+    const gvizMatch =
+      typeof raw === "string" && raw.match(/Date\((\d+),(\d+),(\d+)/);
+    if (gvizMatch) {
+      year = parseInt(gvizMatch[1]);
+      month = parseInt(gvizMatch[2]) + 1; // gviz חודש 0-based
+    } else if (typeof raw === "string") {
+      // נסה לפרק מחרוזת תאריך סטנדרטית dd/mm/yyyy
+      const parts = raw.match(/(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})/);
+      if (parts) {
+        month = parseInt(parts[2]);
+        year = parseInt(parts[3]);
+      }
+    }
+
+    if (!month || !year) {
+      // fallback דרך Date()
+      const d = new Date(raw);
+      if (!isNaN(d)) {
+        month = d.getMonth() + 1;
+        year = d.getFullYear();
+      }
+    }
+
+    if (!month || !year) return "";
+
+    const monthStr = String(month).padStart(2, "0");
+    const yearStr = String(year).slice(2);
+    return `${monthStr}.${yearStr}`;
+  }
+
   return table.rows
     .map((row) => {
       const cells = row.c;
@@ -55,10 +92,11 @@ function parseStations(table) {
       const price = cells[idxPrice]?.v;
       const city = idxCity !== -1 ? cells[idxCity]?.v : "";
       const coordsStr = cells[idxCoords]?.v;
+      const date = idxDate !== -1 ? formatDateCell(cells[idxDate]) : "";
       if (!name || !price || !coordsStr) return null;
       const [lat, lng] = coordsStr.split(/,\s*/).map(Number);
       if (isNaN(lat) || isNaN(lng)) return null;
-      return { name, city, price, lat, lng };
+      return { name, city, price, date, lat, lng };
     })
     .filter(Boolean);
 }
@@ -95,6 +133,14 @@ function renderStations(stations, userPos) {
     const priceEl = document.createElement("p");
     priceEl.className = "price";
     priceEl.textContent = `₪${st.price}`;
+
+    if (st.date) {
+      const dateSpan = document.createElement("span");
+      dateSpan.className = "date";
+      dateSpan.textContent = `  עודכן: ${st.date}`;
+      priceEl.appendChild(dateSpan);
+    }
+
     div.appendChild(priceEl);
 
     if (userPos) {
