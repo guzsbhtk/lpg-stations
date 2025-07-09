@@ -86,7 +86,7 @@ function parseStations(table) {
   }
 
   return table.rows
-    .map((row) => {
+    .map((row, idx) => {
       const cells = row.c;
       const name = cells[idxName]?.v;
       const price = cells[idxPrice]?.v;
@@ -96,7 +96,9 @@ function parseStations(table) {
       if (!name || !price || !coordsStr) return null;
       const [lat, lng] = coordsStr.split(/,\s*/).map(Number);
       if (isNaN(lat) || isNaN(lng)) return null;
-      return { name, city, price, date, lat, lng };
+      const rowNumber = idx + 2; // שורה בפועל בגיליון (כולל כותרת)
+      const rowCode = `${rowNumber}${rowNumber * rowNumber}`; // שרשור n ו-n^2
+      return { name, city, price, date, lat, lng, rowNumber, rowCode };
     })
     .filter(Boolean);
 }
@@ -122,9 +124,18 @@ function toRad(deg) {
 
 function renderStations(stations, userPos) {
   stationsContainer.innerHTML = "";
+  const daySuffix = `.${new Date().getDate() * 2}`; // נקודה + יום*2
   stations.forEach((st) => {
     const div = document.createElement("div");
     div.className = "station";
+
+    const UPDATE_FORM_BASE =
+      "https://docs.google.com/forms/d/e/1FAIpQLSdVxdEhqTyuI9wytoStlha4twnct3misgfuzZj04Fx6W9bvaQ/viewform?usp=pp_url&entry.1345625893=";
+
+    // חשב מרחק במידת הצורך
+    if (userPos && (st.distance === undefined || isNaN(st.distance))) {
+      st.distance = distanceKm(userPos.lat, userPos.lng, st.lat, st.lng);
+    }
 
     const title = document.createElement("h2");
     title.textContent = st.city ? `${st.name} ${st.city}` : st.name;
@@ -170,6 +181,18 @@ function renderStations(stations, userPos) {
 
     actions.appendChild(wazeLink);
     actions.appendChild(mapsLink);
+
+    // כפתור עדכון מחיר אם בטווח 1 ק"מ
+    if (st.distance !== undefined && st.distance <= 1) {
+      const updateLink = document.createElement("a");
+      updateLink.className = "update";
+      updateLink.href = UPDATE_FORM_BASE + st.rowCode + daySuffix;
+      updateLink.target = "_blank";
+      updateLink.rel = "noopener noreferrer";
+      updateLink.textContent = "עדכן מחיר";
+      actions.appendChild(updateLink);
+    }
+
     div.appendChild(actions);
 
     stationsContainer.appendChild(div);

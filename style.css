@@ -41,6 +41,7 @@ main {
   flex-wrap: wrap;
 }
 
+
 #controls label {
   font-weight: bold;
 }
@@ -122,6 +123,10 @@ main {
 
 .station .actions a.maps {
   background: #4285f4;
+}
+
+.station .actions a.update {
+  background: #8e24aa;
 }
 
 .station .actions a:hover {
