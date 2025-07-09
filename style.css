@@ -31,6 +31,32 @@ main {
   justify-content: center;
 }
 
+#controls {
+  max-width: 800px;
+  margin: 0 auto 1rem auto;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+#controls label {
+  font-weight: bold;
+}
+
+#distanceRange {
+  width: 200px;
+}
+
+#sortBy {
+  padding: 0.4rem 0.6rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+}
+
 #search {
   width: 100%;
   max-width: 500px;

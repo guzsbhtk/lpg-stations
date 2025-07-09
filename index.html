@@ -13,6 +13,14 @@
   <div id="search-container">
     <input type="text" id="search" placeholder="חפש תחנה או עיר…" />
   </div>
+  <div id="controls">
+    <label for="distanceRange">מרחק מקסימלי: <span id="distanceValue">50</span> ק"מ</label>
+    <input type="range" id="distanceRange" min="1" max="100" value="50" />
+    <select id="sortBy">
+      <option value="distance">מיון לפי מרחק</option>
+      <option value="price">מיון לפי מחיר</option>
+    </select>
+  </div>
   <main>
     <section id="status">טוען נתונים…</section>
     <section id="stations"></section>

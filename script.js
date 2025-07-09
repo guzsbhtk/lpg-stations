@@ -5,6 +5,9 @@ const SHEET_URL =
 const statusEl = document.getElementById("status");
 const stationsContainer = document.getElementById("stations");
 const searchInput = document.getElementById("search");
+const distanceRange = document.getElementById("distanceRange");
+const distanceValue = document.getElementById("distanceValue");
+const sortSelect = document.getElementById("sortBy");
 
 let allStations = [];
 let userPosGlobal = null;
@@ -169,21 +172,47 @@ async function init() {
   }
 }
 
-// חיפוש ידני
-function setupSearch() {
-  if (!searchInput) return;
-  searchInput.addEventListener("input", () => {
-    const term = searchInput.value.trim().toLowerCase();
-    if (!term) {
-      renderStations(allStations.slice(0, 10), userPosGlobal);
-      return;
-    }
-    const filtered = allStations.filter((st) =>
+function applyFilters() {
+  let list = allStations;
+
+  // חיפוש טקסט
+  const term = searchInput.value.trim().toLowerCase();
+  if (term) {
+    list = list.filter((st) =>
       [st.name, st.city].some((str) => str.toLowerCase().includes(term))
     );
-    renderStations(filtered, userPosGlobal);
-  });
+  }
+
+  // סינון מרחק
+  const maxDist = parseFloat(distanceRange.value);
+  distanceValue.textContent = maxDist;
+  if (userPosGlobal) {
+    list = list.filter((st) => st.distance <= maxDist);
+  }
+
+  // מיון
+  const sortBy = sortSelect.value;
+  if (sortBy === "price") {
+    list = list.slice().sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+  } else if (sortBy === "distance" && userPosGlobal) {
+    list = list.slice().sort((a, b) => a.distance - b.distance);
+  }
+
+  renderStations(list, userPosGlobal);
+}
+
+// חיפוש ידני
+function setupControls() {
+  if (searchInput) {
+    searchInput.addEventListener("input", applyFilters);
+  }
+  if (distanceRange) {
+    distanceRange.addEventListener("input", applyFilters);
+  }
+  if (sortSelect) {
+    sortSelect.addEventListener("change", applyFilters);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", init);
-document.addEventListener("DOMContentLoaded", setupSearch); 
+document.addEventListener("DOMContentLoaded", setupControls); 
