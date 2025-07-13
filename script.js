@@ -380,7 +380,7 @@ function requestGeolocation(stations) {
         stations.sort((a, b) => a.distance - b.distance);
         allStations = stations;
         userPosGlobal = userPos;
-        statusEl.textContent = "מיקום התקבל - מציג תחנות קרובות";
+        statusEl.textContent = "";
         // עדכון התצוגה עם מרחקים אם אין חיפוש פעיל
         if (!searchInput.value.trim()) {
           renderStations(stations.slice(0, CONFIG.MAX_STATIONS_DISPLAY), userPos);
@@ -402,7 +402,7 @@ function requestGeolocation(stations) {
               stations.sort((a, b) => a.distance - b.distance);
               allStations = stations;
               userPosGlobal = userPos;
-              statusEl.textContent = "מיקום התקבל (דיוק נמוך) - מציג תחנות קרובות";
+              statusEl.textContent = "";
               if (!searchInput.value.trim()) {
                 renderStations(stations.slice(0, CONFIG.MAX_STATIONS_DISPLAY), userPos);
               } else {
