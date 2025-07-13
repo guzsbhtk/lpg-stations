@@ -17,20 +17,23 @@
     <h1>תחנות גפ"מ קרובות אלי</h1>
   </header>
   <div id="search-container">
-    <input type="text" id="search" placeholder="חפש תחנה או עיר…" />
+    <input type="text" id="search" placeholder="חפש תחנה או עיר…" 
+           aria-label="חיפוש תחנות גפ״מ לפי שם או עיר" />
   </div>
   <div id="controls">
     <label for="distanceRange">מרחק מקסימלי: <span id="distanceValue">50</span> ק"מ</label>
-    <input type="range" id="distanceRange" min="1" max="100" value="50" />
-    <select id="sortBy">
+    <input type="range" id="distanceRange" min="1" max="100" value="50" 
+           aria-label="מרחק מקסימלי בקילומטרים" 
+           aria-describedby="distanceValue" />
+    <select id="sortBy" aria-label="סדר מיון תחנות">
       <option value="distance">מיון לפי מרחק</option>
       <option value="price">מיון לפי מחיר</option>
     </select>
   </div>
 
   <main>
-    <section id="status">טוען נתונים…</section>
-    <section id="stations"></section>
+    <section id="status" role="status" aria-live="polite">טוען נתונים…</section>
+    <section id="stations" role="main" aria-label="רשימת תחנות גפ״מ"></section>
   </main>
 
   <script src="script.js"></script>
