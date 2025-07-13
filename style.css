@@ -115,10 +115,25 @@ main {
   text-decoration: none;
   color: #fff;
   font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  /* הצמדת האייקון לימין הכפתור – רווח רק בין האייקון לטקסט */
+  margin: 0 0 0 8px;
+}
+
+a.waze .icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
 }
 
 .station .actions a.waze {
-  background: #05c3dd;
+  background: #00d0ff;
 }
 
 .station .actions a.maps {
@@ -129,6 +144,18 @@ main {
   background: #8e24aa;
 }
 
+.station .actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
 .station .actions a:hover {
   opacity: 0.9;
+}
+
+a.maps .icon {
+  background: #fff;
+  border-radius: 4px;
 } 

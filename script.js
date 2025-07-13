@@ -170,14 +170,14 @@ function renderStations(stations, userPos) {
     wazeLink.href = `https://waze.com/ul?ll=${st.lat}%2C${st.lng}&navigate=yes`;
     wazeLink.target = "_blank";
     wazeLink.rel = "noopener noreferrer";
-    wazeLink.textContent = "Waze";
+    wazeLink.innerHTML = '<img src="icons/waze.svg" class="icon" alt=""> Waze';
 
     const mapsLink = document.createElement("a");
     mapsLink.className = "maps";
     mapsLink.href = `https://www.google.com/maps/dir/?api=1&destination=${st.lat}%2C${st.lng}`;
     mapsLink.target = "_blank";
     mapsLink.rel = "noopener noreferrer";
-    mapsLink.textContent = "Google Maps";
+    mapsLink.innerHTML = '<img src="icons/maps.svg" class="icon" alt=""> Google Maps';
 
     actions.appendChild(wazeLink);
     actions.appendChild(mapsLink);
@@ -212,6 +212,9 @@ async function init() {
 
   statusEl.textContent = "מבקש נתוני מיקום מהדפדפן…";
   if (navigator.geolocation) {
+    const geoOptsHigh = { enableHighAccuracy: true, timeout: 60000, maximumAge: 30000 };
+    const geoOptsLow = { enableHighAccuracy: false, timeout: 60000, maximumAge: 600000 };
+    let triedLow = false;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const userPos = {
@@ -229,10 +232,35 @@ async function init() {
       },
       (err) => {
         console.warn("Geolocation failed", err);
-        statusEl.textContent = "לא התקבל מיקום – מציג רשימה ללא סינון";
-        allStations = stations;
-        renderStations(stations);
-      }
+        if (!triedLow && (err.code === 2 || err.code === 3)) {
+          triedLow = true;
+          navigator.geolocation.getCurrentPosition(
+            (pos2) => {
+              const userPos = { lat: pos2.coords.latitude, lng: pos2.coords.longitude };
+              stations.forEach(
+                (st) => (st.distance = distanceKm(userPos.lat, userPos.lng, st.lat, st.lng))
+              );
+              stations.sort((a, b) => a.distance - b.distance);
+              allStations = stations;
+              userPosGlobal = userPos;
+              statusEl.textContent = "";
+              renderStations(stations.slice(0, 10), userPos);
+            },
+            (err2) => {
+              console.warn("Low accuracy geolocation failed", err2);
+              statusEl.textContent = `${geoErrorText(err2.code)} – מציג רשימה מלאה`;
+              allStations = stations;
+              renderStations(stations);
+            },
+            geoOptsLow
+          );
+        } else {
+          statusEl.textContent = `${geoErrorText(err.code)} – מציג רשימה מלאה`;
+          allStations = stations;
+          renderStations(stations);
+        }
+      },
+      geoOptsHigh
     );
   } else {
     statusEl.textContent = "הדפדפן לא תומך במיקום – מציג רשימה ללא סינון";
@@ -255,7 +283,7 @@ function applyFilters() {
   // סינון מרחק
   const maxDist = parseFloat(distanceRange.value);
   distanceValue.textContent = maxDist;
-  if (userPosGlobal) {
+  if (!term && userPosGlobal) {
     list = list.filter((st) => st.distance <= maxDist);
   }
 
@@ -280,6 +308,20 @@ function setupControls() {
   }
   if (sortSelect) {
     sortSelect.addEventListener("change", applyFilters);
+  }
+}
+
+// תרגום קודי השגיאה של geolocation להודעות מובנות למשתמש
+function geoErrorText(code) {
+  switch (code) {
+    case 1: // PERMISSION_DENIED
+      return "לא אושרה גישה למיקום";
+    case 2: // POSITION_UNAVAILABLE
+      return "לא התקבלו נתוני מיקום";
+    case 3: // TIMEOUT
+      return "הבקשה לקבלת מיקום חרגה ממגבלת הזמן";
+    default:
+      return "שגיאה לא ידועה בקבלת מיקום";
   }
 }
 
