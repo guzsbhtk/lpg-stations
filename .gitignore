@@ -1,0 +1,41 @@
+# Build outputs
+*.apk
+*.aab
+*.idsig
+app-release-*
+build/
+.gradle/
+
+# Keystore and secrets (IMPORTANT!)
+*.keystore
+*.jks
+pepk.jar
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+manifest-checksum.txt
+*-backup.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Capacitor (if not using)
+capacitor.config.json
+
+# Optional
+store_icon.png
+package-lock.json 

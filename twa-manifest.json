@@ -1,7 +1,7 @@
 {
   "packageId": "io.github.guzsbhtk.twa",
   "host": "guzsbhtk.github.io",
-  "name": "תחנות גפ\"מ קרובות אלי",
+  "name": "LPG Stations Near Me",
   "launcherName": "LPG",
   "display": "standalone",
   "themeColor": "#2E7D32",
@@ -50,4 +50,4 @@
   "fileHandlers": [],
   "launchHandlerClientMode": "",
   "appVersion": "three"
-}
+} 
