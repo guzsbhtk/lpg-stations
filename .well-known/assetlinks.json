@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "io.github.guzsbhtk.twa",
-        "sha256_cert_fingerprints": ["AA:BB:CC:DD:EE:FF:11:22:33:44:55:66:77:88:99:00:11:22:33:44:55:66:77:88:99:00:AA:BB:CC:DD:EE:FF"]
+        "sha256_cert_fingerprints": ["SHA256: 3F:97:B2:84:E3:8D:7F:0B:0C:3D:F4:48:7C:FA:52:B2:00:AF:CB:96:EA:27:52:CE:5F:B0:A1:43:3D:D7:3D:F4"]
       }
     }]
