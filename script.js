@@ -9,7 +9,9 @@ const CONFIG = {
   UPDATE_DISTANCE_THRESHOLD: 1,
   EARTH_RADIUS_KM: 6371,
   GEOLOCATION_MAX_AGE_HIGH: 30000,
-  GEOLOCATION_MAX_AGE_LOW: 600000
+  GEOLOCATION_MAX_AGE_LOW: 600000,
+  // רענון מיקום כל דקה וחצי (90 שניות)
+  GEOLOCATION_REFRESH_MS: 90000
 };
 
 const statusEl = document.getElementById("status");
@@ -359,6 +361,15 @@ async function init() {
 
   // בקשת מיקום במקביל (לא חוסמת)
   requestGeolocation(stations);
+
+  // רענון מיקום אוטומטי כל דקה
+  if (CONFIG.GEOLOCATION_REFRESH_MS > 0) {
+    setInterval(() => {
+      if (allStations && allStations.length > 0) {
+        requestGeolocation(allStations);
+      }
+    }, CONFIG.GEOLOCATION_REFRESH_MS);
+  }
 }
 
 // פונקציה נפרדת לבקשת מיקום שרצה במקביל
