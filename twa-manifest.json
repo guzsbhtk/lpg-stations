@@ -1,0 +1,53 @@
+{
+  "packageId": "io.github.guzsbhtk.twa",
+  "host": "guzsbhtk.github.io",
+  "name": "תחנות גפ\"מ קרובות אלי",
+  "launcherName": "LPG",
+  "display": "standalone",
+  "themeColor": "#2E7D32",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#FFFFFF",
+  "enableNotifications": true,
+  "startUrl": "/lpg-stations/",
+  "iconUrl": "https://guzsbhtk.github.io/lpg-stations/icons/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "/Users/oz/Desktop/gas/gas/android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "3",
+  "appVersionCode": 3,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://guzsbhtk.github.io/lpg-stations/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": true
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://guzsbhtk.github.io/lpg-stations/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [
+    {
+      "value": "3F:97:B2:84:E3:8D:7F:0B:0C:3D:F4:48:7C:FA:52:B2:00:AF:CB:96:EA:27:52:CE:5F:B0:A1:43:3D:D7:3D:F4"
+    }
+  ],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "appVersion": "3"
+}
