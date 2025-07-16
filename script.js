@@ -24,6 +24,46 @@ const sortSelect = document.getElementById("sortBy");
 let allStations = [];
 let userPosGlobal = null;
 
+// כפתור בקשת מיקום יזומה
+const requestLocationBtn = document.getElementById("request-location-btn");
+if (requestLocationBtn) {
+  requestLocationBtn.addEventListener("click", () => {
+    requestLocationBtn.disabled = true;
+    requestLocationBtn.textContent = "מנסה לקבל מיקום...";
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          requestLocationBtn.disabled = false;
+          requestLocationBtn.textContent = "אפשר מיקום";
+          // עדכון התחנות עם המיקום שהתקבל
+          if (allStations && allStations.length > 0) {
+            const userPos = {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+            };
+            allStations.forEach(
+              (st) => (st.distance = distanceKm(userPos.lat, userPos.lng, st.lat, st.lng))
+            );
+            allStations.sort((a, b) => a.distance - b.distance);
+            userPosGlobal = userPos;
+            renderStations(allStations.slice(0, CONFIG.MAX_STATIONS_DISPLAY), userPos);
+          }
+          statusEl.textContent = "";
+        },
+        (err) => {
+          requestLocationBtn.disabled = false;
+          requestLocationBtn.textContent = "אפשר מיקום";
+          statusEl.innerHTML = `${geoErrorText(err.code)} – מציג רשימה מלאה`;
+        }
+      );
+    } else {
+      requestLocationBtn.disabled = false;
+      requestLocationBtn.textContent = "אפשר מיקום";
+      statusEl.textContent = "הדפדפן לא תומך במיקום – מציג רשימה ללא סינון";
+    }
+  });
+}
+
 // פונקציה בטוחה לפיענוח תגובת GViz
 function parseGVizResponse(text) {
   try {
