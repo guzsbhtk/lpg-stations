@@ -179,25 +179,4 @@ a.waze .icon {
 a.maps .icon {
   background: #fff;
   border-radius: 4px;
-}
-
-#request-location-btn {
-  display: block;
-  margin: 1rem auto;
-  padding: 0.7rem 1.5rem;
-  font-size: 1.1rem;
-  background: #2e7d32;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background 0.2s;
-}
-#request-location-btn:disabled {
-  background: #aaa;
-  cursor: not-allowed;
-}
-#request-location-btn:hover:not(:disabled) {
-  background: #388e3c;
 } 
