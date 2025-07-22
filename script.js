@@ -10,8 +10,8 @@ const CONFIG = {
   EARTH_RADIUS_KM: 6371,
   GEOLOCATION_MAX_AGE_HIGH: 30000,
   GEOLOCATION_MAX_AGE_LOW: 600000,
-  // רענון מיקום כל דקה וחצי (90 שניות)
-  GEOLOCATION_REFRESH_MS: 90000
+  // רענון מיקום כל דקה (60 שניות)
+  GEOLOCATION_REFRESH_MS: 60000
 };
 
 const statusEl = document.getElementById("status");
