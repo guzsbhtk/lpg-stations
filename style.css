@@ -89,6 +89,50 @@ main {
   outline-offset: 2px;
 }
 
+/* נגישות - ניגודיות גבוהה */
+body.high-contrast {
+  background: #000 !important;
+  color: #fff !important;
+}
+
+body.high-contrast main {
+  background: #000 !important;
+  color: #fff !important;
+  border: 2px solid #fff !important;
+}
+
+body.high-contrast .station {
+  background: #000 !important;
+  color: #fff !important;
+  border: 1px solid #fff !important;
+}
+
+body.high-contrast #search,
+body.high-contrast #sortBy {
+  background: #000 !important;
+  color: #fff !important;
+  border: 1px solid #fff !important;
+}
+
+/* נגישות - רווחים מורחבים */
+body.increased-spacing {
+  line-height: 2 !important;
+}
+
+body.increased-spacing .station {
+  margin-bottom: 2rem !important;
+  padding: 1.5rem !important;
+}
+
+body.increased-spacing .station .actions {
+  gap: 1rem !important;
+}
+
+body.increased-spacing .station .actions a {
+  padding: 0.8rem 1.5rem !important;
+  margin: 0.5rem 1rem 0.5rem 0 !important;
+}
+
 .station {
   background: #fff;
   border-radius: 8px;

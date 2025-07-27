@@ -10,8 +10,8 @@ const CONFIG = {
   EARTH_RADIUS_KM: 6371,
   GEOLOCATION_MAX_AGE_HIGH: 30000,
   GEOLOCATION_MAX_AGE_LOW: 600000,
-  // רענון מיקום כל דקה וחצי (90 שניות)
-  GEOLOCATION_REFRESH_MS: 90000
+  // רענון מיקום כל דקה (60 שניות)
+  GEOLOCATION_REFRESH_MS: 60000
 };
 
 const statusEl = document.getElementById("status");
@@ -23,46 +23,6 @@ const sortSelect = document.getElementById("sortBy");
 
 let allStations = [];
 let userPosGlobal = null;
-
-// כפתור בקשת מיקום יזומה
-const requestLocationBtn = document.getElementById("request-location-btn");
-if (requestLocationBtn) {
-  requestLocationBtn.addEventListener("click", () => {
-    requestLocationBtn.disabled = true;
-    requestLocationBtn.textContent = "מנסה לקבל מיקום...";
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          requestLocationBtn.disabled = false;
-          requestLocationBtn.textContent = "אפשר מיקום";
-          // עדכון התחנות עם המיקום שהתקבל
-          if (allStations && allStations.length > 0) {
-            const userPos = {
-              lat: pos.coords.latitude,
-              lng: pos.coords.longitude,
-            };
-            allStations.forEach(
-              (st) => (st.distance = distanceKm(userPos.lat, userPos.lng, st.lat, st.lng))
-            );
-            allStations.sort((a, b) => a.distance - b.distance);
-            userPosGlobal = userPos;
-            renderStations(allStations.slice(0, CONFIG.MAX_STATIONS_DISPLAY), userPos);
-          }
-          statusEl.textContent = "";
-        },
-        (err) => {
-          requestLocationBtn.disabled = false;
-          requestLocationBtn.textContent = "אפשר מיקום";
-          statusEl.innerHTML = `${geoErrorText(err.code)} – מציג רשימה מלאה`;
-        }
-      );
-    } else {
-      requestLocationBtn.disabled = false;
-      requestLocationBtn.textContent = "אפשר מיקום";
-      statusEl.textContent = "הדפדפן לא תומך במיקום – מציג רשימה ללא סינון";
-    }
-  });
-}
 
 // פונקציה בטוחה לפיענוח תגובת GViz
 function parseGVizResponse(text) {
@@ -343,14 +303,14 @@ function renderStations(stations, userPos) {
     wazeLink.href = `https://waze.com/ul?ll=${st.lat}%2C${st.lng}&navigate=yes`;
     wazeLink.target = "_blank";
     wazeLink.rel = "noopener noreferrer";
-    wazeLink.innerHTML = '<img src="icons/waze.svg" class="icon" alt=""> Waze';
+            wazeLink.innerHTML = '<img src="icons/waze.svg" class="icon" alt="לוגו Waze - ניווט עם Waze"> Waze';
 
     const mapsLink = document.createElement("a");
     mapsLink.className = "maps";
     mapsLink.href = `https://www.google.com/maps/dir/?api=1&destination=${st.lat}%2C${st.lng}`;
     mapsLink.target = "_blank";
     mapsLink.rel = "noopener noreferrer";
-    mapsLink.innerHTML = '<img src="icons/maps.svg" class="icon" alt=""> Google Maps';
+            mapsLink.innerHTML = '<img src="icons/maps.svg" class="icon" alt="לוגו Google Maps - ניווט עם Google Maps"> Google Maps';
 
     actions.appendChild(wazeLink);
     actions.appendChild(mapsLink);
@@ -462,27 +422,27 @@ function requestGeolocation(stations) {
             },
             (err2) => {
               console.warn("Low accuracy geolocation failed", err2);
-              statusEl.textContent = `${geoErrorText(err2.code)} – מציג רשימה מלאה`;
+              statusEl.innerHTML = `<div class="error-message" role="alert">${geoErrorText(err2.code)} – מציג רשימה מלאה</div>`;
               // התחנות כבר מוצגות, רק נעדכן את הסטטוס
             },
             geoOptsLow
           );
         } else {
-          statusEl.textContent = `${geoErrorText(err.code)} – מציג רשימה מלאה`;
+          statusEl.innerHTML = `<div class="error-message" role="alert">${geoErrorText(err.code)} – מציג רשימה מלאה</div>`;
           // התחנות כבר מוצגות, רק נעדכן את הסטטוס
         }
       },
       geoOptsHigh
     );
   } else {
-    statusEl.textContent = "הדפדפן לא תומך במיקום – מציג רשימה ללא סינון";
+    statusEl.innerHTML = '<div class="error-message" role="alert">הדפדפן לא תומך במיקום – מציג רשימה ללא סינון</div>';
     // התחנות כבר מוצגות, רק נעדכן את הסטטוס
   }
 }
 
 function applyFilters() {
   if (!allStations || allStations.length === 0) {
-    stationsContainer.innerHTML = '<p>אין תחנות להצגה</p>';
+    stationsContainer.innerHTML = '<div class="error-message" role="alert">אין תחנות להצגה</div>';
     return;
   }
 
@@ -517,7 +477,7 @@ function applyFilters() {
 
   // הצגת הודעה אם אין תוצאות
   if (list.length === 0) {
-    stationsContainer.innerHTML = '<p>לא נמצאו תחנות התואמות לחיפוש</p>';
+    stationsContainer.innerHTML = '<div class="error-message" role="alert">לא נמצאו תחנות התואמות לחיפוש</div>';
     return;
   }
 
