@@ -164,61 +164,6 @@
       font-size: 16px;
     }
 
-    /* כפתור X לסגירה */
-    .close-button {
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      width: 20px;
-      height: 20px;
-      background: #666;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1001;
-      transition: all 0.2s ease;
-    }
-
-    .close-button:hover {
-      background: #999;
-      transform: scale(1.1);
-    }
-
-    /* container לכפתורים */
-    .button-container {
-      position: fixed;
-      z-index: 1000;
-      display: none; /* מוסתר כברירת מחדל */
-    }
-
-    /* מיקום containers */
-    .button-container:nth-of-type(1) {
-      top: 20px;
-      right: 20px;
-    }
-
-    .button-container:nth-of-type(2) {
-      top: 70px;
-      right: 20px;
-    }
-
-    .button-container:nth-of-type(3) {
-      top: 120px;
-      right: 20px;
-    }
-
-    /* עדכון מיקום הכפתורים */
-    .ios-add-to-home,
-    .android-install,
-    .pwa-install {
-      position: static;
-    }
-
     /* הודעת הוספה למסך הבית */
     .add-to-home-instructions {
       position: fixed;
@@ -274,31 +219,22 @@
   </header>
 
   <!-- כפתור הוספה למסך הבית לאפל -->
-  <div class="button-container">
-    <button id="ios-add-to-home" class="ios-add-to-home" onclick="showAddToHomeInstructions()">
-      <span class="icon">📱</span>
-      הוסף למסך הבית
-    </button>
-    <button class="close-button" onclick="closeButton('ios')" title="סגור">×</button>
-  </div>
+  <button id="ios-add-to-home" class="ios-add-to-home" onclick="showAddToHomeInstructions()">
+    <span class="icon">📱</span>
+    הוסף למסך הבית
+  </button>
 
   <!-- כפתור התקנה לאנדרואיד -->
-  <div class="button-container">
-    <button id="android-install" class="android-install" onclick="installAndroidApp()">
-      <span class="icon">📲</span>
-      התקן אפליקציה
-    </button>
-    <button class="close-button" onclick="closeButton('android')" title="סגור">×</button>
-  </div>
+  <button id="android-install" class="android-install" onclick="installAndroidApp()">
+    <span class="icon">📲</span>
+    התקן אפליקציה
+  </button>
 
   <!-- כפתור התקנה PWA -->
-  <div class="button-container">
-    <button id="pwa-install" class="pwa-install" onclick="installPWA()">
-      <span class="icon">⚡</span>
-      התקן אפליקציה
-    </button>
-    <button class="close-button" onclick="closeButton('pwa')" title="סגור">×</button>
-  </div>
+  <button id="pwa-install" class="pwa-install" onclick="installPWA()">
+    <span class="icon">⚡</span>
+    התקן אפליקציה
+  </button>
 
   <!-- הודעת הוראות הוספה למסך הבית -->
   <div class="overlay" id="overlay"></div>

@@ -50,8 +50,8 @@ function showPWAInstallButton() {
   // באנדרואיד - הצג PWA רק אם כפתור החנות לא מוצג
   if (isAndroid() && isMobile()) {
     const androidInstallButton = document.getElementById('android-install');
-    if (androidInstallButton?.parentElement && androidInstallButton.parentElement.style.display === 'block') {
-      if (pwaInstallButton?.parentElement) pwaInstallButton.parentElement.style.display = 'none';
+    if (androidInstallButton && androidInstallButton.style.display === 'flex') {
+      if (pwaInstallButton) pwaInstallButton.style.display = 'none';
       console.log('❌ PWA Install Button hidden - Android store button has priority');
       return;
     }
@@ -67,11 +67,9 @@ function showPWAInstallButton() {
   
   // הצג את הכפתור רק אם זה מכשיר נייד, יש PWA prompt והאפליקציה לא מותקנת
   if (pwaInstallButton && isMobile() && deferredPrompt && !isAlreadyInstalled) {
-    // הצג את ה-container (שכולל את הכפתור ואת כפתור ה-X)
-    pwaInstallButton.parentElement.style.display = 'block';
-    console.log('✅ PWA Install Button container should be visible now');
+    pwaInstallButton.style.display = 'flex';
+    console.log('✅ PWA Install Button should be visible now');
   } else {
-    if (pwaInstallButton?.parentElement) pwaInstallButton.parentElement.style.display = 'none';
     console.log('❌ PWA Install Button not shown because:');
     if (!pwaInstallButton) console.log('- Button element not found');
     if (!isMobile()) console.log('- Not mobile device');
@@ -206,13 +204,12 @@ function showIOSAddToHomeButton() {
   const shouldShow = addToHomeButton && isMobile() && isIOS() && !isStandalone();
   
   if (shouldShow) {
-    // הצג את ה-container (שכולל את הכפתור ואת כפתור ה-X)
-    addToHomeButton.parentElement.style.display = 'block';
+    addToHomeButton.style.display = 'flex';
     // הסתר את כפתור האנדרואיד אם הוא קיים
-    if (androidInstallButton?.parentElement) {
-      androidInstallButton.parentElement.style.display = 'none';
+    if (androidInstallButton) {
+      androidInstallButton.style.display = 'none';
     }
-    console.log('✅ iOS Button container should be visible now');
+    console.log('✅ iOS Button should be visible now');
     
     // בדיקה נוספת - וודא שהכפתור באמת נראה
     setTimeout(() => {
@@ -224,9 +221,6 @@ function showIOSAddToHomeButton() {
       console.log('Button z-index:', computedStyle.zIndex);
     }, 100);
   } else {
-    if (addToHomeButton?.parentElement) {
-      addToHomeButton.parentElement.style.display = 'none';
-    }
     console.log('❌ iOS Button not shown because:');
     if (!addToHomeButton) console.log('- Button element not found');
     if (!isMobile()) console.log('- Not mobile device');
@@ -255,20 +249,16 @@ function showAndroidInstallButton() {
   const shouldShow = androidInstallButton && isMobile() && isAndroid() && !isAndroidAppInstalled() && !isInApp;
 
   if (shouldShow) {
-    // הצג את ה-container (שכולל את הכפתור ואת כפתור ה-X)
-    androidInstallButton.parentElement.style.display = 'block';
+    androidInstallButton.style.display = 'flex';
     // הסתר את כפתור ה-iOS אם הוא קיים
-    if (addToHomeButton?.parentElement) {
-      addToHomeButton.parentElement.style.display = 'none';
+    if (addToHomeButton) {
+      addToHomeButton.style.display = 'none';
     }
     // הסתר את כפתור ה-PWA אם קיים
     const pwaInstallButton = document.getElementById('pwa-install');
-    if (pwaInstallButton?.parentElement) pwaInstallButton.parentElement.style.display = 'none';
-    console.log('✅ Android Install Button container should be visible now');
+    if (pwaInstallButton) pwaInstallButton.style.display = 'none';
+    console.log('✅ Android Install Button should be visible now');
   } else {
-    if (androidInstallButton?.parentElement) {
-      androidInstallButton.parentElement.style.display = 'none';
-    }
     console.log('❌ Android Install Button not shown because:');
     if (!androidInstallButton) console.log('- Button element not found');
     if (!isMobile()) console.log('- Not mobile device');
@@ -309,7 +299,6 @@ window.showAddToHomeInstructions = showAddToHomeInstructions;
 window.hideAddToHomeInstructions = hideAddToHomeInstructions;
 window.installAndroidApp = installAndroidApp;
 window.installPWA = installPWA;
-window.closeButton = closeButton;
 
 // הוספת event listener לסגירת ההודעות בלחיצה על הרקע
 document.addEventListener('DOMContentLoaded', function() {
@@ -670,13 +659,10 @@ async function init() {
     
     // הסתר את הכפתור אם זה לא מכשיר נייד או אם האפליקציה מותקנת
     if (!isMobile() || isAlreadyInstalled) {
-      pwaInstallButton.parentElement.style.display = 'none';
+      pwaInstallButton.style.display = 'none';
       console.log('🚫 PWA Install Button hidden - not mobile or app already installed');
     }
   }
-
-  // בדוק כפתורים שנסגרו בעבר
-  checkClosedButtons();
 
   // בקשת מיקום במקביל (לא חוסמת)
   requestGeolocation(stations);
@@ -831,83 +817,6 @@ function geoErrorText(code) {
       return "הבקשה לקבלת מיקום חרגה ממגבלת הזמן";
     default:
       return "שגיאה לא ידועה בקבלת מיקום";
-  }
-}
-
-// פונקציות לניהול קוקיס
-function setCookie(name, value, days = 30) {
-  const expires = new Date();
-  expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-}
-
-function getCookie(name) {
-  const nameEQ = name + "=";
-  const ca = document.cookie.split(';');
-  for(let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-  }
-  return null;
-}
-
-function closeButton(buttonType) {
-  console.log(`Closing ${buttonType} button`);
-  
-  // מצא את הכפתור או ה-container
-  let elementToHide;
-  if (buttonType === 'ios') {
-    elementToHide = document.getElementById('ios-add-to-home')?.parentElement;
-  } else {
-    elementToHide = document.getElementById(`${buttonType}-install`)?.parentElement;
-  }
-  
-  if (elementToHide) {
-    elementToHide.style.display = 'none';
-    console.log(`Container for ${buttonType} hidden`);
-  } else {
-    console.log(`Container for ${buttonType} not found`);
-  }
-  
-  // שמור בקוקיס שהכפתור נסגר
-  setCookie(`button_${buttonType}_closed`, 'true', 30);
-  
-  console.log(`Button ${buttonType} closed and saved to cookies`);
-}
-
-function checkClosedButtons() {
-  // בדוק אם כפתורים נסגרו בעבר
-  const iosClosed = getCookie('button_ios_closed');
-  const androidClosed = getCookie('button_android_closed');
-  const pwaClosed = getCookie('button_pwa_closed');
-  
-  console.log('Checking closed buttons:', {
-    iosClosed,
-    androidClosed,
-    pwaClosed
-  });
-  
-  // הסתר כפתורים שנסגרו בעבר
-  if (iosClosed === 'true') {
-    const iosButton = document.getElementById('ios-add-to-home');
-    if (iosButton?.parentElement) {
-      iosButton.parentElement.style.display = 'none';
-    }
-  }
-  
-  if (androidClosed === 'true') {
-    const androidButton = document.getElementById('android-install');
-    if (androidButton?.parentElement) {
-      androidButton.parentElement.style.display = 'none';
-    }
-  }
-  
-  if (pwaClosed === 'true') {
-    const pwaButton = document.getElementById('pwa-install');
-    if (pwaButton?.parentElement) {
-      pwaButton.parentElement.style.display = 'none';
-    }
   }
 }
 
