@@ -67,8 +67,9 @@ function showPWAInstallButton() {
   
   // הצג את הכפתור רק אם זה מכשיר נייד, יש PWA prompt והאפליקציה לא מותקנת
   if (pwaInstallButton && isMobile() && deferredPrompt && !isAlreadyInstalled) {
+    // הצג את ה-container (שכולל את הכפתור ואת כפתור ה-X)
     pwaInstallButton.parentElement.style.display = 'block';
-    console.log('✅ PWA Install Button should be visible now');
+    console.log('✅ PWA Install Button container should be visible now');
   } else {
     if (pwaInstallButton?.parentElement) pwaInstallButton.parentElement.style.display = 'none';
     console.log('❌ PWA Install Button not shown because:');
@@ -205,12 +206,13 @@ function showIOSAddToHomeButton() {
   const shouldShow = addToHomeButton && isMobile() && isIOS() && !isStandalone();
   
   if (shouldShow) {
+    // הצג את ה-container (שכולל את הכפתור ואת כפתור ה-X)
     addToHomeButton.parentElement.style.display = 'block';
     // הסתר את כפתור האנדרואיד אם הוא קיים
     if (androidInstallButton?.parentElement) {
       androidInstallButton.parentElement.style.display = 'none';
     }
-    console.log('✅ iOS Button should be visible now');
+    console.log('✅ iOS Button container should be visible now');
     
     // בדיקה נוספת - וודא שהכפתור באמת נראה
     setTimeout(() => {
@@ -253,6 +255,7 @@ function showAndroidInstallButton() {
   const shouldShow = androidInstallButton && isMobile() && isAndroid() && !isAndroidAppInstalled() && !isInApp;
 
   if (shouldShow) {
+    // הצג את ה-container (שכולל את הכפתור ואת כפתור ה-X)
     androidInstallButton.parentElement.style.display = 'block';
     // הסתר את כפתור ה-iOS אם הוא קיים
     if (addToHomeButton?.parentElement) {
@@ -261,7 +264,7 @@ function showAndroidInstallButton() {
     // הסתר את כפתור ה-PWA אם קיים
     const pwaInstallButton = document.getElementById('pwa-install');
     if (pwaInstallButton?.parentElement) pwaInstallButton.parentElement.style.display = 'none';
-    console.log('✅ Android Install Button should be visible now');
+    console.log('✅ Android Install Button container should be visible now');
   } else {
     if (androidInstallButton?.parentElement) {
       androidInstallButton.parentElement.style.display = 'none';
