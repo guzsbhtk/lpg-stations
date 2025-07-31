@@ -301,6 +301,7 @@ window.showAddToHomeInstructions = showAddToHomeInstructions;
 window.hideAddToHomeInstructions = hideAddToHomeInstructions;
 window.installAndroidApp = installAndroidApp;
 window.installPWA = installPWA;
+window.closeButton = closeButton;
 
 // הוספת event listener לסגירת ההודעות בלחיצה על הרקע
 document.addEventListener('DOMContentLoaded', function() {
@@ -666,6 +667,9 @@ async function init() {
     }
   }
 
+  // בדוק כפתורים שנסגרו בעבר
+  checkClosedButtons();
+
   // בקשת מיקום במקביל (לא חוסמת)
   requestGeolocation(stations);
 
@@ -819,6 +823,68 @@ function geoErrorText(code) {
       return "הבקשה לקבלת מיקום חרגה ממגבלת הזמן";
     default:
       return "שגיאה לא ידועה בקבלת מיקום";
+  }
+}
+
+// פונקציות לניהול קוקיס
+function setCookie(name, value, days = 30) {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+}
+
+function getCookie(name) {
+  const nameEQ = name + "=";
+  const ca = document.cookie.split(';');
+  for(let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+}
+
+function closeButton(buttonType) {
+  console.log(`Closing ${buttonType} button`);
+  
+  // הסתר את הכפתור
+  const button = document.getElementById(`${buttonType}-install`) || document.getElementById(`${buttonType}-add-to-home`);
+  if (button) {
+    button.style.display = 'none';
+  }
+  
+  // שמור בקוקיס שהכפתור נסגר
+  setCookie(`button_${buttonType}_closed`, 'true', 30);
+  
+  console.log(`Button ${buttonType} closed and saved to cookies`);
+}
+
+function checkClosedButtons() {
+  // בדוק אם כפתורים נסגרו בעבר
+  const iosClosed = getCookie('button_ios_closed');
+  const androidClosed = getCookie('button_android_closed');
+  const pwaClosed = getCookie('button_pwa_closed');
+  
+  console.log('Checking closed buttons:', {
+    iosClosed,
+    androidClosed,
+    pwaClosed
+  });
+  
+  // הסתר כפתורים שנסגרו בעבר
+  if (iosClosed === 'true') {
+    const iosButton = document.getElementById('ios-add-to-home');
+    if (iosButton) iosButton.style.display = 'none';
+  }
+  
+  if (androidClosed === 'true') {
+    const androidButton = document.getElementById('android-install');
+    if (androidButton) androidButton.style.display = 'none';
+  }
+  
+  if (pwaClosed === 'true') {
+    const pwaButton = document.getElementById('pwa-install');
+    if (pwaButton) pwaButton.style.display = 'none';
   }
 }
 
