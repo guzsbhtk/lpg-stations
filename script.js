@@ -24,6 +24,244 @@ const sortSelect = document.getElementById("sortBy");
 let allStations = [];
 let userPosGlobal = null;
 
+let deferredPrompt;
+
+// תפיסת beforeinstallprompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('PWA Install prompt available');
+  // מונע את הצגת הכפתור האוטומטי
+  e.preventDefault();
+  // שומר את האירוע לשימוש מאוחר יותר
+  deferredPrompt = e;
+  
+  // הצג כפתור התקנה מותאם אישית
+  showPWAInstallButton();
+});
+
+function showPWAInstallButton() {
+  const pwaInstallButton = document.getElementById('pwa-install');
+  if (pwaInstallButton && deferredPrompt) {
+    pwaInstallButton.style.display = 'flex';
+    console.log('✅ PWA Install Button should be visible now');
+  }
+}
+
+function installPWA() {
+  if (deferredPrompt) {
+    console.log('Installing PWA...');
+    deferredPrompt.prompt();
+    
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('PWA installed successfully');
+      } else {
+        console.log('PWA installation declined');
+      }
+      deferredPrompt = null;
+    });
+  }
+}
+
+// פונקציות להוספה למסך הבית לאפל
+function isIOS() {
+  const userAgent = navigator.userAgent;
+  const isIPad = /iPad/.test(userAgent);
+  const isIPhone = /iPhone/.test(userAgent);
+  const isIPod = /iPod/.test(userAgent);
+  const isMac = /Mac/.test(userAgent);
+  const isTouch = 'ontouchend' in document;
+  
+  // iPad M1 מזוהה לפעמים כ-Mac עם touch
+  const isIPadM1 = isMac && isTouch;
+  
+  const result = (isIPad || isIPhone || isIPod || isIPadM1) && !window.MSStream;
+  
+  console.log('iOS Detection Debug:', {
+    userAgent,
+    isIPad,
+    isIPhone, 
+    isIPod,
+    isMac,
+    isTouch,
+    isIPadM1,
+    result
+  });
+  
+  return result;
+}
+
+function isAndroid() {
+  return /Android/.test(navigator.userAgent);
+}
+
+function isAndroidAppInstalled() {
+  // בדיקה אם האפליקציה מותקנת באנדרואיד
+  const userAgent = navigator.userAgent;
+  
+  // בדיקות שונות לזיהוי אם האפליקציה מותקנת
+  const isInTWA = window.navigator.standalone === true;
+  const hasAndroidIntent = 'Android' in window && window.Android;
+  const hasTWAFeatures = 'beforeinstallprompt' in window;
+  
+  // בדיקה אם זה TWA (Trusted Web Activity)
+  const isTWAMode = userAgent.includes('wv') || userAgent.includes('TWA');
+  
+  // בדיקה אם זה WebView של האפליקציה
+  const isInWebView = userAgent.includes('wv') || userAgent.includes('Mobile') && userAgent.includes('Safari') && !userAgent.includes('Chrome');
+  
+  // בדיקה אם יש תכונות של אפליקציה מותקנת
+  const hasAppFeatures = 'serviceWorker' in navigator && 'PushManager' in window;
+  
+  const result = isInTWA || hasAndroidIntent || isTWAMode || isInWebView;
+  
+  console.log('Android App Detection:', {
+    userAgent,
+    isInTWA,
+    hasAndroidIntent,
+    hasTWAFeatures,
+    isTWAMode,
+    isInWebView,
+    hasAppFeatures,
+    result
+  });
+  
+  return result;
+}
+
+function isStandalone() {
+  return window.navigator.standalone === true;
+}
+
+function showIOSAddToHomeButton() {
+  const addToHomeButton = document.getElementById('ios-add-to-home');
+  const androidInstallButton = document.getElementById('android-install');
+  
+  // דיבוג - הדפסת מידע לקונסול
+  console.log('=== iOS Add to Home Debug ===');
+  console.log('User Agent:', navigator.userAgent);
+  console.log('isIOS():', isIOS());
+  console.log('isStandalone():', isStandalone());
+  console.log('Button element found:', !!addToHomeButton);
+  
+  // בדיקה אם הכפתור קיים ב-DOM
+  if (!addToHomeButton) {
+    console.log('🔍 Searching for button in DOM...');
+    const allButtons = document.querySelectorAll('button');
+    console.log('Total buttons found:', allButtons.length);
+    allButtons.forEach((btn, index) => {
+      console.log(`Button ${index}:`, btn.id, btn.className, btn.textContent);
+    });
+  }
+  
+  // הצג את הכפתור רק אם זה iOS ולא standalone
+  const shouldShow = addToHomeButton && isIOS() && !isStandalone();
+  
+  if (shouldShow) {
+    addToHomeButton.style.display = 'flex';
+    // הסתר את כפתור האנדרואיד אם הוא קיים
+    if (androidInstallButton) {
+      androidInstallButton.style.display = 'none';
+    }
+    console.log('✅ iOS Button should be visible now');
+    
+    // בדיקה נוספת - וודא שהכפתור באמת נראה
+    setTimeout(() => {
+      const computedStyle = window.getComputedStyle(addToHomeButton);
+      console.log('Button computed display:', computedStyle.display);
+      console.log('Button computed visibility:', computedStyle.visibility);
+      console.log('Button computed opacity:', computedStyle.opacity);
+      console.log('Button position:', computedStyle.position);
+      console.log('Button z-index:', computedStyle.zIndex);
+    }, 100);
+  } else {
+    console.log('❌ iOS Button not shown because:');
+    if (!addToHomeButton) console.log('- Button element not found');
+    if (!isIOS()) console.log('- Not iOS device');
+    if (isStandalone()) console.log('- Already in standalone mode');
+  }
+}
+
+function showAndroidInstallButton() {
+  const androidInstallButton = document.getElementById('android-install');
+  const addToHomeButton = document.getElementById('ios-add-to-home');
+  
+  console.log('=== Android Install Debug ===');
+  console.log('isAndroid():', isAndroid());
+  console.log('isAndroidAppInstalled():', isAndroidAppInstalled());
+  console.log('Android button found:', !!androidInstallButton);
+  
+  // בדיקות נוספות לזיהוי אפליקציה מותקנת
+  const isInApp = window.navigator.standalone === true || 
+                  window.location.href.includes('android-app://') ||
+                  document.referrer.includes('android-app://') ||
+                  window.navigator.userAgent.includes('wv');
+  
+  console.log('Additional app detection:', {
+    standalone: window.navigator.standalone,
+    referrer: document.referrer,
+    hasWV: window.navigator.userAgent.includes('wv'),
+    isInApp
+  });
+  
+  // הצג את הכפתור רק אם זה אנדרואיד והאפליקציה לא מותקנת
+  const shouldShow = androidInstallButton && isAndroid() && !isAndroidAppInstalled() && !isInApp;
+  
+  if (shouldShow) {
+    androidInstallButton.style.display = 'flex';
+    // הסתר את כפתור ה-iOS אם הוא קיים
+    if (addToHomeButton) {
+      addToHomeButton.style.display = 'none';
+    }
+    console.log('✅ Android Install Button should be visible now');
+  } else {
+    console.log('❌ Android Install Button not shown because:');
+    if (!androidInstallButton) console.log('- Button element not found');
+    if (!isAndroid()) console.log('- Not Android device');
+    if (isAndroidAppInstalled()) console.log('- Android app already installed');
+    if (isInApp) console.log('- Already in app mode');
+  }
+}
+
+function installAndroidApp() {
+  const playStoreUrl = 'https://play.google.com/store/apps/details?id=io.github.guzsbhtk.twa';
+  console.log('Opening Play Store:', playStoreUrl);
+  window.open(playStoreUrl, '_blank');
+}
+
+function showAddToHomeInstructions() {
+  const overlay = document.getElementById('overlay');
+  const instructions = document.getElementById('add-to-home-instructions');
+  
+  if (overlay && instructions) {
+    overlay.style.display = 'block';
+    instructions.style.display = 'block';
+  }
+}
+
+function hideAddToHomeInstructions() {
+  const overlay = document.getElementById('overlay');
+  const instructions = document.getElementById('add-to-home-instructions');
+  
+  if (overlay && instructions) {
+    overlay.style.display = 'none';
+    instructions.style.display = 'none';
+  }
+}
+
+// הוספת פונקציות לחלון הגלובלי
+window.showAddToHomeInstructions = showAddToHomeInstructions;
+window.hideAddToHomeInstructions = hideAddToHomeInstructions;
+window.installAndroidApp = installAndroidApp;
+window.installPWA = installPWA;
+
+// הוספת event listener לסגירת ההודעות בלחיצה על הרקע
+document.addEventListener('DOMContentLoaded', function() {
+  const overlay = document.getElementById('overlay');
+  if (overlay) {
+    overlay.addEventListener('click', hideAddToHomeInstructions);
+  }
+});
+
 // פונקציה בטוחה לפיענוח תגובת GViz
 function parseGVizResponse(text) {
   try {
@@ -333,6 +571,7 @@ function renderStations(stations, userPos) {
 }
 
 async function init() {
+  console.log('🚀 init() function called');
   statusEl.textContent = "מביא נתונים מהגיליון…";
   let stations;
   try {
@@ -358,6 +597,11 @@ async function init() {
   
   // הפעלת חיפוש מיד
   setupControls();
+
+  // הצגת כפתור הוספה למסך הבית למשתמשי אפל
+  console.log('📱 About to call showIOSAddToHomeButton()');
+  showIOSAddToHomeButton();
+  showAndroidInstallButton(); // הוספת כפתור לאנדרואיד
 
   // בקשת מיקום במקביל (לא חוסמת)
   requestGeolocation(stations);

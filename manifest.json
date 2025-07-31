@@ -1,12 +1,12 @@
 {
   "name": "תחנות גפ\"מ קרובות אלי",
   "short_name": "LPG",
-  "start_url": "/lpg-stations/",
-  "scope": "/lpg-stations/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2e7d32",
-  "orientation": "portrait",
+  "orientation": "any",
   "icons": [
     {
       "src": "icons/icon-192.png",
