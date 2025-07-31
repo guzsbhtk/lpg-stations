@@ -47,6 +47,16 @@ function showPWAInstallButton() {
                              document.referrer.includes('android-app://') ||
                              window.navigator.userAgent.includes('wv');
   
+  // באנדרואיד - הצג PWA רק אם כפתור החנות לא מוצג
+  if (isAndroid() && isMobile()) {
+    const androidInstallButton = document.getElementById('android-install');
+    if (androidInstallButton && androidInstallButton.style.display === 'flex') {
+      if (pwaInstallButton) pwaInstallButton.style.display = 'none';
+      console.log('❌ PWA Install Button hidden - Android store button has priority');
+      return;
+    }
+  }
+
   console.log('PWA Install Debug:', {
     isMobile: isMobile(),
     hasDeferredPrompt: !!deferredPrompt,
@@ -60,6 +70,7 @@ function showPWAInstallButton() {
     pwaInstallButton.style.display = 'flex';
     console.log('✅ PWA Install Button should be visible now');
   } else {
+    if (pwaInstallButton) pwaInstallButton.style.display = 'none';
     console.log('❌ PWA Install Button not shown because:');
     if (!pwaInstallButton) console.log('- Button element not found');
     if (!isMobile()) console.log('- Not mobile device');
@@ -222,7 +233,7 @@ function showIOSAddToHomeButton() {
 function showAndroidInstallButton() {
   const androidInstallButton = document.getElementById('android-install');
   const addToHomeButton = document.getElementById('ios-add-to-home');
-  
+
   console.log('=== Android Install Debug ===');
   console.log('isMobile():', isMobile());
   console.log('isAndroid():', isAndroid());
@@ -234,25 +245,22 @@ function showAndroidInstallButton() {
                   window.location.href.includes('android-app://') ||
                   document.referrer.includes('android-app://') ||
                   window.navigator.userAgent.includes('wv');
-  
-  console.log('Additional app detection:', {
-    standalone: window.navigator.standalone,
-    referrer: document.referrer,
-    hasWV: window.navigator.userAgent.includes('wv'),
-    isInApp
-  });
-  
-  // הצג את הכפתור רק אם זה מכשיר נייד, אנדרואיד והאפליקציה לא מותקנת
+
+  // קדימות לחנות: אם אפשר להציג כפתור חנות - הסתר את כפתור ה-PWA
   const shouldShow = androidInstallButton && isMobile() && isAndroid() && !isAndroidAppInstalled() && !isInApp;
-  
+
   if (shouldShow) {
     androidInstallButton.style.display = 'flex';
     // הסתר את כפתור ה-iOS אם הוא קיים
     if (addToHomeButton) {
       addToHomeButton.style.display = 'none';
     }
+    // הסתר את כפתור ה-PWA אם קיים
+    const pwaInstallButton = document.getElementById('pwa-install');
+    if (pwaInstallButton) pwaInstallButton.style.display = 'none';
     console.log('✅ Android Install Button should be visible now');
   } else {
+    if (androidInstallButton) androidInstallButton.style.display = 'none';
     console.log('❌ Android Install Button not shown because:');
     if (!androidInstallButton) console.log('- Button element not found');
     if (!isMobile()) console.log('- Not mobile device');
