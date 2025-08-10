@@ -1,5 +1,8 @@
 // תוסף נגישות מתקדם
 document.addEventListener('DOMContentLoaded', function() {
+  // טעינת הגדרות נגישות מ-localStorage
+  loadAccessibilitySettings();
+  
   // יצירת תפריט נגישות
   var menu = document.createElement('div');
   menu.id = 'accessibility-menu';
@@ -43,6 +46,9 @@ document.addEventListener('DOMContentLoaded', function() {
       el.style.fontSize = (currentElSize + 2) + 'px';
     });
     
+    // שמירת הגדרות
+    saveAccessibilitySettings();
+    
     console.log('טקסט הוגדל');
   };
   
@@ -57,6 +63,9 @@ document.addEventListener('DOMContentLoaded', function() {
       var currentElSize = parseFloat(getComputedStyle(el).fontSize);
       el.style.fontSize = (currentElSize - 2) + 'px';
     });
+    
+    // שמירת הגדרות
+    saveAccessibilitySettings();
     
     console.log('טקסט הוקטן');
   };
@@ -74,6 +83,9 @@ document.addEventListener('DOMContentLoaded', function() {
       contrastBtn.textContent = 'ניגודיות רגילה';
       console.log('ניגודיות גבוהה');
     }
+    
+    // שמירת הגדרות
+    saveAccessibilitySettings();
   };
   
   window.toggleSpacing = function() {
@@ -89,6 +101,9 @@ document.addEventListener('DOMContentLoaded', function() {
       spacingBtn.textContent = 'הקטנת רווחים';
       console.log('רווחים הורחבו');
     }
+    
+    // שמירת הגדרות
+    saveAccessibilitySettings();
   };
   
   window.resetAccessibility = function() {
@@ -112,6 +127,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (contrastBtn) {
       contrastBtn.textContent = 'ניגודיות גבוהה';
     }
+    
+    // מחיקת הגדרות מ-localStorage
+    localStorage.removeItem('accessibilitySettings');
     
     console.log('הגדרות אופסו');
   };
@@ -184,4 +202,63 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   
   console.log('תוסף נגישות נטען בהצלחה');
+  
+  // פונקציות לשמירה וטעינה של הגדרות נגישות
+  function saveAccessibilitySettings() {
+    var settings = {
+      fontSize: document.body.style.fontSize || '',
+      highContrast: document.body.classList.contains('high-contrast'),
+      increasedSpacing: document.body.classList.contains('increased-spacing')
+    };
+    localStorage.setItem('accessibilitySettings', JSON.stringify(settings));
+    console.log('הגדרות נגישות נשמרו:', settings);
+  }
+  
+  function loadAccessibilitySettings() {
+    try {
+      var savedSettings = localStorage.getItem('accessibilitySettings');
+      if (savedSettings) {
+        var settings = JSON.parse(savedSettings);
+        console.log('טוען הגדרות נגישות:', settings);
+        
+        // הפעלת הגדלת טקסט
+        if (settings.fontSize) {
+          document.body.style.fontSize = settings.fontSize;
+          // הפעלת הגדלת טקסט על אלמנטים ספציפיים
+          var elements = document.querySelectorAll('h1, h2, h3, p, span, div, button, input, select, label, li, a');
+          elements.forEach(function(el) {
+            var currentElSize = parseFloat(getComputedStyle(el).fontSize);
+            var bodySize = parseFloat(settings.fontSize);
+            if (bodySize > 16) { // אם הטקסט הוגדל
+              el.style.fontSize = (currentElSize + (bodySize - 16)) + 'px';
+            }
+          });
+        }
+        
+        // הפעלת ניגודיות גבוהה
+        if (settings.highContrast) {
+          document.body.classList.add('high-contrast');
+          var contrastBtn = document.getElementById('contrast-btn');
+          if (contrastBtn) {
+            contrastBtn.textContent = 'ניגודיות רגילה';
+          }
+        }
+        
+        // הפעלת הגדלת רווחים
+        if (settings.increasedSpacing) {
+          document.body.classList.add('increased-spacing');
+          var spacingBtn = document.getElementById('spacing-btn');
+          if (spacingBtn) {
+            spacingBtn.textContent = 'הקטנת רווחים';
+          }
+        }
+      }
+    } catch (error) {
+      console.error('שגיאה בטעינת הגדרות נגישות:', error);
+    }
+  }
+  
+  // הוספת הפונקציות לחלון הגלובלי
+  window.saveAccessibilitySettings = saveAccessibilitySettings;
+  window.loadAccessibilitySettings = loadAccessibilitySettings;
 }); 
