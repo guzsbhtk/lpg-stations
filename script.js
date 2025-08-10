@@ -42,10 +42,7 @@ function showPWAInstallButton() {
   const pwaInstallButton = document.getElementById('pwa-install');
   
   // בדיקה אם האפליקציה כבר מותקנת
-  const isAlreadyInstalled = window.navigator.standalone === true || 
-                             window.location.href.includes('android-app://') ||
-                             document.referrer.includes('android-app://') ||
-                             window.navigator.userAgent.includes('wv');
+  const isAlreadyInstalled = isStandalone();
   
   // באנדרואיד - הצג PWA רק אם כפתור החנות לא מוצג
   if (isAndroid() && isMobile()) {
@@ -175,7 +172,12 @@ function isAndroidAppInstalled() {
 }
 
 function isStandalone() {
-  return window.navigator.standalone === true;
+  return window.navigator.standalone === true || 
+         window.location.href.includes('android-app://') ||
+         document.referrer.includes('android-app://') ||
+         window.navigator.userAgent.includes('wv') ||
+         window.matchMedia('(display-mode: standalone)').matches ||
+         window.matchMedia('(display-mode: window-controls-overlay)').matches;
 }
 
 function showIOSAddToHomeButton() {
@@ -239,14 +241,8 @@ function showAndroidInstallButton() {
   console.log('isAndroidAppInstalled():', isAndroidAppInstalled());
   console.log('Android button found:', !!androidInstallButton);
   
-  // בדיקות נוספות לזיהוי אפליקציה מותקנת
-  const isInApp = window.navigator.standalone === true || 
-                  window.location.href.includes('android-app://') ||
-                  document.referrer.includes('android-app://') ||
-                  window.navigator.userAgent.includes('wv');
-
   // קדימות לחנות: אם אפשר להציג כפתור חנות - הסתר את כפתור ה-PWA
-  const shouldShow = androidInstallButton && isMobile() && isAndroid() && !isAndroidAppInstalled() && !isInApp;
+  const shouldShow = androidInstallButton && isMobile() && isAndroid() && !isAndroidAppInstalled() && !isStandalone();
 
   if (shouldShow) {
     androidInstallButton.style.display = 'flex';
@@ -618,6 +614,19 @@ function renderStations(stations, userPos) {
 
 async function init() {
   console.log('🚀 init() function called');
+  
+  // הסתר את כל כפתורי ההתקנה אם האפליקציה כבר מותקנת
+  if (isStandalone()) {
+    console.log('🚫 App already installed - hiding all install buttons');
+    const iosButton = document.getElementById('ios-add-to-home');
+    const androidButton = document.getElementById('android-install');
+    const pwaButton = document.getElementById('pwa-install');
+    
+    if (iosButton) iosButton.style.display = 'none';
+    if (androidButton) androidButton.style.display = 'none';
+    if (pwaButton) pwaButton.style.display = 'none';
+  }
+  
   statusEl.textContent = "מביא נתונים מהגיליון…";
   let stations;
   try {
@@ -652,13 +661,8 @@ async function init() {
   // בדיקה נוספת לכפתור PWA - וודא שהוא לא מופיע אם האפליקציה מותקנת
   const pwaInstallButton = document.getElementById('pwa-install');
   if (pwaInstallButton) {
-    const isAlreadyInstalled = window.navigator.standalone === true || 
-                               window.location.href.includes('android-app://') ||
-                               document.referrer.includes('android-app://') ||
-                               window.navigator.userAgent.includes('wv');
-    
     // הסתר את הכפתור אם זה לא מכשיר נייד או אם האפליקציה מותקנת
-    if (!isMobile() || isAlreadyInstalled) {
+    if (!isMobile() || isStandalone()) {
       pwaInstallButton.style.display = 'none';
       console.log('🚫 PWA Install Button hidden - not mobile or app already installed');
     }
