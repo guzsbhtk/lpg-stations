@@ -39,6 +39,12 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 function showPWAInstallButton() {
+  // בדיקה מוקדמת - אם האפליקציה מותקנת, אל תציג שום כפתור
+  if (isStandalone()) {
+    console.log('🚫 PWA Install Button - App already installed, skipping');
+    return;
+  }
+  
   const pwaInstallButton = document.getElementById('pwa-install');
   
   // בדיקה אם האפליקציה כבר מותקנת
@@ -181,6 +187,12 @@ function isStandalone() {
 }
 
 function showIOSAddToHomeButton() {
+  // בדיקה מוקדמת - אם האפליקציה מותקנת, אל תציג שום כפתור
+  if (isStandalone()) {
+    console.log('🚫 iOS Add to Home Button - App already installed, skipping');
+    return;
+  }
+  
   const addToHomeButton = document.getElementById('ios-add-to-home');
   const androidInstallButton = document.getElementById('android-install');
   
@@ -232,6 +244,12 @@ function showIOSAddToHomeButton() {
 }
 
 function showAndroidInstallButton() {
+  // בדיקה מוקדמת - אם האפליקציה מותקנת, אל תציג שום כפתור
+  if (isStandalone()) {
+    console.log('🚫 Android Install Button - App already installed, skipping');
+    return;
+  }
+  
   const androidInstallButton = document.getElementById('android-install');
   const addToHomeButton = document.getElementById('ios-add-to-home');
 
@@ -239,6 +257,7 @@ function showAndroidInstallButton() {
   console.log('isMobile():', isMobile());
   console.log('isAndroid():', isAndroid());
   console.log('isAndroidAppInstalled():', isAndroidAppInstalled());
+  console.log('isStandalone():', isStandalone());
   console.log('Android button found:', !!androidInstallButton);
   
   // קדימות לחנות: אם אפשר להציג כפתור חנות - הסתר את כפתור ה-PWA
@@ -653,19 +672,23 @@ async function init() {
   // הפעלת חיפוש מיד
   setupControls();
 
-  // הצגת כפתור הוספה למסך הבית למשתמשי אפל
-  console.log('📱 About to call showIOSAddToHomeButton()');
-  showIOSAddToHomeButton();
-  showAndroidInstallButton(); // הוספת כפתור לאנדרואיד
-  
-  // בדיקה נוספת לכפתור PWA - וודא שהוא לא מופיע אם האפליקציה מותקנת
-  const pwaInstallButton = document.getElementById('pwa-install');
-  if (pwaInstallButton) {
-    // הסתר את הכפתור אם זה לא מכשיר נייד או אם האפליקציה מותקנת
-    if (!isMobile() || isStandalone()) {
-      pwaInstallButton.style.display = 'none';
-      console.log('🚫 PWA Install Button hidden - not mobile or app already installed');
+  // הצגת כפתורי התקנה רק אם האפליקציה לא מותקנת
+  if (!isStandalone()) {
+    console.log('📱 About to call showIOSAddToHomeButton()');
+    showIOSAddToHomeButton();
+    showAndroidInstallButton(); // הוספת כפתור לאנדרואיד
+    
+    // בדיקה נוספת לכפתור PWA - וודא שהוא לא מופיע אם האפליקציה מותקנת
+    const pwaInstallButton = document.getElementById('pwa-install');
+    if (pwaInstallButton) {
+      // הסתר את הכפתור אם זה לא מכשיר נייד או אם האפליקציה מותקנת
+      if (!isMobile() || isStandalone()) {
+        pwaInstallButton.style.display = 'none';
+        console.log('🚫 PWA Install Button hidden - not mobile or app already installed');
+      }
     }
+  } else {
+    console.log('🚫 App already installed - skipping install button checks');
   }
 
   // בקשת מיקום במקביל (לא חוסמת)

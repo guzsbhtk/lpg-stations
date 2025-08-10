@@ -36,13 +36,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var newSize = currentSize + 2;
     document.body.style.fontSize = newSize + 'px';
     
-    // הגדלת טקסט לכל האלמנטים - גישה כללית יותר
-    var elements = document.querySelectorAll('*');
+    // הגדלת טקסט לכל האלמנטים - כולל כאלה ללא fontSize מוגדר
+    var elements = document.querySelectorAll('h1, h2, h3, p, span, div, button, input, select, label, li, a');
     elements.forEach(function(el) {
-      if (el.style.fontSize) {
-        var currentElSize = parseFloat(getComputedStyle(el).fontSize);
-        el.style.fontSize = (currentElSize + 2) + 'px';
-      }
+      var currentElSize = parseFloat(getComputedStyle(el).fontSize);
+      el.style.fontSize = (currentElSize + 2) + 'px';
     });
     
     console.log('טקסט הוגדל');
@@ -53,13 +51,11 @@ document.addEventListener('DOMContentLoaded', function() {
     var newSize = currentSize - 2;
     document.body.style.fontSize = newSize + 'px';
     
-    // הקטנת טקסט לכל האלמנטים - גישה כללית יותר
-    var elements = document.querySelectorAll('*');
+    // הקטנת טקסט לכל האלמנטים - כולל כאלה ללא fontSize מוגדר
+    var elements = document.querySelectorAll('h1, h2, h3, p, span, div, button, input, select, label, li, a');
     elements.forEach(function(el) {
-      if (el.style.fontSize) {
-        var currentElSize = parseFloat(getComputedStyle(el).fontSize);
-        el.style.fontSize = (currentElSize - 2) + 'px';
-      }
+      var currentElSize = parseFloat(getComputedStyle(el).fontSize);
+      el.style.fontSize = (currentElSize - 2) + 'px';
     });
     
     console.log('טקסט הוקטן');
@@ -99,12 +95,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.style.fontSize = '';
     document.body.classList.remove('high-contrast', 'increased-spacing');
     
-    // איפוס גודל טקסט לכל האלמנטים - גישה כללית יותר
-    var elements = document.querySelectorAll('*');
+    // איפוס גודל טקסט לכל האלמנטים - כולל כאלה ללא fontSize מוגדר
+    var elements = document.querySelectorAll('h1, h2, h3, p, span, div, button, input, select, label, li, a');
     elements.forEach(function(el) {
-      if (el.style.fontSize) {
-        el.style.fontSize = '';
-      }
+      el.style.fontSize = '';
     });
     
     // איפוס טקסט כפתור הרווחים
