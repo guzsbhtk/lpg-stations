@@ -707,30 +707,49 @@ async function init() {
 // פונקציה נפרדת לבקשת מיקום שרצה במקביל
 function requestGeolocation(stations) {
   if (navigator.geolocation) {
-    // הגדרות מותאמות למחשב ולמובייל
-    const isDesktop = !isMobile();
-    const timeout = isDesktop ? 30000 : CONFIG.GEOLOCATION_TIMEOUT; // 30 שניות למחשב
-    const maxAgeHigh = isDesktop ? 300000 : CONFIG.GEOLOCATION_MAX_AGE_HIGH; // 5 דקות למחשב
-    const maxAgeLow = isDesktop ? 600000 : CONFIG.GEOLOCATION_MAX_AGE_LOW; // 10 דקות למחשב
+    console.log('🔍 Geolocation Debug:', {
+      isDesktop: !isMobile(),
+      isMobile: isMobile(),
+      isIOS: isIOS(),
+      isStandalone: isStandalone(),
+      userAgent: navigator.userAgent.substring(0, 100) + '...'
+    });
     
-    const geoOptsHigh = { 
-      enableHighAccuracy: true, 
-      timeout: timeout, 
-      maximumAge: maxAgeHigh 
-    };
-    const geoOptsLow = { 
-      enableHighAccuracy: false, 
-      timeout: timeout, 
-      maximumAge: maxAgeLow 
+    // נתחיל עם הגדרות פשוטות
+    const simpleOptions = {
+      enableHighAccuracy: false,
+      timeout: 10000,
+      maximumAge: 0
     };
     
-    let triedLow = false;
-    let triedHigh = false;
+    const accurateOptions = {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0
+    };
     
-    // למחשב - ננסה קודם עם דיוק נמוך
-    const tryGeolocation = (options, isHighAccuracy = false) => {
+    let attemptCount = 0;
+    const maxAttempts = 3;
+    
+    const tryGeolocation = () => {
+      attemptCount++;
+      console.log(`🎯 Geolocation attempt ${attemptCount}/${maxAttempts}`);
+      
+      // בחירת אפשרויות לפי ניסיון
+      let currentOptions;
+      if (attemptCount === 1) {
+        currentOptions = simpleOptions; // ניסיון ראשון - פשוט ומהיר
+      } else if (attemptCount === 2) {
+        currentOptions = accurateOptions; // ניסיון שני - מדויק יותר
+      } else {
+        currentOptions = { enableHighAccuracy: false, timeout: 30000, maximumAge: 300000 }; // ניסיון אחרון - סבלני
+      }
+      
+      console.log(`Using options:`, currentOptions);
+      
       navigator.geolocation.getCurrentPosition(
         (pos) => {
+          console.log('✅ Geolocation success!', pos.coords);
           const userPos = {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
@@ -752,35 +771,22 @@ function requestGeolocation(stations) {
           }
         },
         (err) => {
-          console.warn(`Geolocation failed (${isHighAccuracy ? 'high' : 'low'} accuracy)`, err);
+          console.warn(`❌ Geolocation attempt ${attemptCount} failed:`, err);
           
-          // למחשב - ננסה דיוק גבוה אם דיוק נמוך נכשל
-          if (isDesktop && !isHighAccuracy && !triedHigh) {
-            triedHigh = true;
-            tryGeolocation(geoOptsHigh, true);
-            return;
+          if (attemptCount < maxAttempts) {
+            console.log(`⏳ Trying again in 1 second...`);
+            setTimeout(tryGeolocation, 1000);
+          } else {
+            console.log('🚫 All geolocation attempts failed');
+            statusEl.innerHTML = `<div class="error-message" role="alert">${geoErrorText(err.code)} – מציג רשימה מלאה</div>`;
           }
-          
-          // למובייל - ננסה דיוק נמוך אם דיוק גבוה נכשל
-          if (!isDesktop && isHighAccuracy && !triedLow && (err.code === 2 || err.code === 3)) {
-            triedLow = true;
-            tryGeolocation(geoOptsLow, false);
-            return;
-          }
-          
-          // אם הכל נכשל
-          statusEl.innerHTML = `<div class="error-message" role="alert">${geoErrorText(err.code)} – מציג רשימה מלאה</div>`;
         },
-        options
+        currentOptions
       );
     };
     
-        // התחלה - למחשב עם דיוק נמוך, למובייל עם דיוק גבוה
-    if (isDesktop) {
-      tryGeolocation(geoOptsLow, false);
-    } else {
-      tryGeolocation(geoOptsHigh, true);
-    }
+    // התחלת הניסיונות
+    tryGeolocation();
   } else {
     statusEl.innerHTML = '<div class="error-message" role="alert">הדפדפן לא תומך במיקום – מציג רשימה ללא סינון</div>';
     // התחנות כבר מוצגות, רק נעדכן את הסטטוס
