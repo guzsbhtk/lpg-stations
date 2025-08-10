@@ -712,8 +712,21 @@ function requestGeolocation(stations) {
       isMobile: isMobile(),
       isIOS: isIOS(),
       isStandalone: isStandalone(),
+      protocol: window.location.protocol,
+      hostname: window.location.hostname,
+      isSecure: window.location.protocol === 'https:',
+      permissions: 'permissions' in navigator,
       userAgent: navigator.userAgent.substring(0, 100) + '...'
     });
+    
+    // בדיקת הרשאות אם זמין
+    if ('permissions' in navigator) {
+      navigator.permissions.query({name: 'geolocation'}).then((result) => {
+        console.log('🔐 Geolocation permission state:', result.state);
+      }).catch((err) => {
+        console.log('🔐 Cannot check geolocation permissions:', err);
+      });
+    }
     
     // נתחיל עם הגדרות פשוטות
     const simpleOptions = {
@@ -749,7 +762,16 @@ function requestGeolocation(stations) {
       
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          console.log('✅ Geolocation success!', pos.coords);
+          console.log('✅ Geolocation success!', {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            altitude: pos.coords.altitude,
+            altitudeAccuracy: pos.coords.altitudeAccuracy,
+            heading: pos.coords.heading,
+            speed: pos.coords.speed,
+            timestamp: pos.timestamp
+          });
           const userPos = {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
@@ -771,7 +793,20 @@ function requestGeolocation(stations) {
           }
         },
         (err) => {
-          console.warn(`❌ Geolocation attempt ${attemptCount} failed:`, err);
+          console.warn(`❌ Geolocation attempt ${attemptCount} failed:`, {
+            code: err.code,
+            message: err.message,
+            timestamp: Date.now(),
+            options: currentOptions
+          });
+          
+          // פירוט השגיאה
+          const errorDetails = {
+            1: 'PERMISSION_DENIED - המשתמש דחה את הבקשה למיקום',
+            2: 'POSITION_UNAVAILABLE - לא ניתן לקבל מיקום (אין GPS/WiFi/סלולר)',
+            3: 'TIMEOUT - הבקשה חרגה ממגבלת הזמן'
+          };
+          console.log(`📋 Error details: ${errorDetails[err.code] || 'Unknown error'}`);
           
           if (attemptCount < maxAttempts) {
             console.log(`⏳ Trying again in 1 second...`);
