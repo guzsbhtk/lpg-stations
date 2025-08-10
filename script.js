@@ -279,7 +279,7 @@ function showAndroidInstallButton() {
     if (!isMobile()) console.log('- Not mobile device');
     if (!isAndroid()) console.log('- Not Android device');
     if (isAndroidAppInstalled()) console.log('- Android app already installed');
-    if (isInApp) console.log('- Already in app mode');
+    if (isStandalone()) console.log('- Already in app mode');
   }
 }
 
