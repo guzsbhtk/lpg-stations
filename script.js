@@ -707,65 +707,80 @@ async function init() {
 // פונקציה נפרדת לבקשת מיקום שרצה במקביל
 function requestGeolocation(stations) {
   if (navigator.geolocation) {
-    const geoOptsHigh = { enableHighAccuracy: true, timeout: CONFIG.GEOLOCATION_TIMEOUT, maximumAge: CONFIG.GEOLOCATION_MAX_AGE_HIGH };
-    const geoOptsLow = { enableHighAccuracy: false, timeout: CONFIG.GEOLOCATION_TIMEOUT, maximumAge: CONFIG.GEOLOCATION_MAX_AGE_LOW };
+    // הגדרות מותאמות למחשב ולמובייל
+    const isDesktop = !isMobile();
+    const timeout = isDesktop ? 30000 : CONFIG.GEOLOCATION_TIMEOUT; // 30 שניות למחשב
+    const maxAgeHigh = isDesktop ? 300000 : CONFIG.GEOLOCATION_MAX_AGE_HIGH; // 5 דקות למחשב
+    const maxAgeLow = isDesktop ? 600000 : CONFIG.GEOLOCATION_MAX_AGE_LOW; // 10 דקות למחשב
+    
+    const geoOptsHigh = { 
+      enableHighAccuracy: true, 
+      timeout: timeout, 
+      maximumAge: maxAgeHigh 
+    };
+    const geoOptsLow = { 
+      enableHighAccuracy: false, 
+      timeout: timeout, 
+      maximumAge: maxAgeLow 
+    };
+    
     let triedLow = false;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const userPos = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        };
-        // חישוב מרחקים לכל התחנות
-        stations.forEach(
-          (st) => (st.distance = distanceKm(userPos.lat, userPos.lng, st.lat, st.lng))
-        );
-        stations.sort((a, b) => a.distance - b.distance);
-        allStations = stations;
-        userPosGlobal = userPos;
-        statusEl.textContent = "";
-        // עדכון התצוגה עם מרחקים אם אין חיפוש פעיל
-        if (!searchInput.value.trim()) {
-          renderStations(stations.slice(0, CONFIG.MAX_STATIONS_DISPLAY), userPos);
-        } else {
-          // אם יש חיפוש פעיל, הרץ אותו מחדש עם המרחקים החדשים
-          applyFilters();
-        }
-      },
-      (err) => {
-        console.warn("Geolocation failed", err);
-        if (!triedLow && (err.code === 2 || err.code === 3)) {
-          triedLow = true;
-          navigator.geolocation.getCurrentPosition(
-            (pos2) => {
-              const userPos = { lat: pos2.coords.latitude, lng: pos2.coords.longitude };
-              stations.forEach(
-                (st) => (st.distance = distanceKm(userPos.lat, userPos.lng, st.lat, st.lng))
-              );
-              stations.sort((a, b) => a.distance - b.distance);
-              allStations = stations;
-              userPosGlobal = userPos;
-              statusEl.textContent = "";
-              if (!searchInput.value.trim()) {
-                renderStations(stations.slice(0, CONFIG.MAX_STATIONS_DISPLAY), userPos);
-              } else {
-                applyFilters();
-              }
-            },
-            (err2) => {
-              console.warn("Low accuracy geolocation failed", err2);
-              statusEl.innerHTML = `<div class="error-message" role="alert">${geoErrorText(err2.code)} – מציג רשימה מלאה</div>`;
-              // התחנות כבר מוצגות, רק נעדכן את הסטטוס
-            },
-            geoOptsLow
+    let triedHigh = false;
+    
+    // למחשב - ננסה קודם עם דיוק נמוך
+    const tryGeolocation = (options, isHighAccuracy = false) => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const userPos = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          };
+          // חישוב מרחקים לכל התחנות
+          stations.forEach(
+            (st) => (st.distance = distanceKm(userPos.lat, userPos.lng, st.lat, st.lng))
           );
-        } else {
+          stations.sort((a, b) => a.distance - b.distance);
+          allStations = stations;
+          userPosGlobal = userPos;
+          statusEl.textContent = "";
+          // עדכון התצוגה עם מרחקים אם אין חיפוש פעיל
+          if (!searchInput.value.trim()) {
+            renderStations(stations.slice(0, CONFIG.MAX_STATIONS_DISPLAY), userPos);
+          } else {
+            // אם יש חיפוש פעיל, הרץ אותו מחדש עם המרחקים החדשים
+            applyFilters();
+          }
+        },
+        (err) => {
+          console.warn(`Geolocation failed (${isHighAccuracy ? 'high' : 'low'} accuracy)`, err);
+          
+          // למחשב - ננסה דיוק גבוה אם דיוק נמוך נכשל
+          if (isDesktop && !isHighAccuracy && !triedHigh) {
+            triedHigh = true;
+            tryGeolocation(geoOptsHigh, true);
+            return;
+          }
+          
+          // למובייל - ננסה דיוק נמוך אם דיוק גבוה נכשל
+          if (!isDesktop && isHighAccuracy && !triedLow && (err.code === 2 || err.code === 3)) {
+            triedLow = true;
+            tryGeolocation(geoOptsLow, false);
+            return;
+          }
+          
+          // אם הכל נכשל
           statusEl.innerHTML = `<div class="error-message" role="alert">${geoErrorText(err.code)} – מציג רשימה מלאה</div>`;
-          // התחנות כבר מוצגות, רק נעדכן את הסטטוס
-        }
-      },
-      geoOptsHigh
-    );
+        },
+        options
+      );
+    };
+    
+        // התחלה - למחשב עם דיוק נמוך, למובייל עם דיוק גבוה
+    if (isDesktop) {
+      tryGeolocation(geoOptsLow, false);
+    } else {
+      tryGeolocation(geoOptsHigh, true);
+    }
   } else {
     statusEl.innerHTML = '<div class="error-message" role="alert">הדפדפן לא תומך במיקום – מציג רשימה ללא סינון</div>';
     // התחנות כבר מוצגות, רק נעדכן את הסטטוס
