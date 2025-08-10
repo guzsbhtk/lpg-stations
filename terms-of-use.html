@@ -123,9 +123,9 @@
     
     <h2>1. אחריות על המידע</h2>
     <div class="warning">
-      <strong>חשוב לדעת:</strong> כל המחירים ומיקומי התחנות המוצגים באתר מבוססים על עדכונים של הקהילה. אני לא אחראי אם יש בהם טעות ואף ייתכן שחלק מהמידע אינו עדכני.
+      <strong>חשוב לדעת:</strong> כל המחירים ומיקומי התחנות המוצגים באתר מבוססים על עדכונים של הקהילה. אנו לא אחראים אם יש בהם טעות ואף ייתכן שחלק מהמידע אינו עדכני.
     </div>
-    <p>המידע באתר מתעדכן על ידי משתמשים כמוך, ולכן עלול להיות לא מדויק או לא מעודכן. מומלץ תמיד לוודא את המחיר והמיקום עם התחנה עצמה לפני התדלוק.</p>
+    <p>המידע באתר מתעדכן על ידי משתמשים כמוך, ולכן עלול להיות לא מדויק או לא מעודכן. </p>
     
     <h2>2. איך לעדכן מחיר בתחנה</h2>
     <div class="highlight">
@@ -181,5 +181,28 @@
     
     <a href="index.html" class="back-link">← חזרה לדף הראשי</a>
   </div>
+
+  <!-- כפתור נגישות צף -->
+  <button id="accessibility-btn" onclick="toggleAccessibilityMenu()" style="
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #2e7d32;
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  " title="הגדרות נגישות">♿</button>
+
+  <script src="accessibility.js"></script>
 </body>
 </html>

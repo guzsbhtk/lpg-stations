@@ -25,12 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
     <button id="contrast-btn" onclick="toggleHighContrast()" style="display: block; width: 100%; margin: 8px 0; padding: 12px; border: 1px solid #ddd; background: #f9f9f9; cursor: pointer; border-radius: 8px; font-size: 14px;">ניגודיות גבוהה</button>
     <button id="spacing-btn" onclick="toggleSpacing()" style="display: block; width: 100%; margin: 8px 0; padding: 12px; border: 1px solid #ddd; background: #f9f9f9; cursor: pointer; border-radius: 8px; font-size: 14px;">הגדלת רווחים</button>
     <button onclick="resetAccessibility()" style="display: block; width: 100%; margin: 8px 0; padding: 12px; border: 1px solid #f44336; background: #f44336; color: white; cursor: pointer; border-radius: 8px; font-size: 14px;">איפוס הגדרות</button>
-    <div style="margin-top: 15px; padding: 10px; background: #f5f5f5; border-radius: 8px; font-size: 12px;">
-      <strong>קיצורי מקלדת:</strong><br>
-      <kbd>Tab</kbd> - ניווט<br>
-      <kbd>Enter</kbd> - הפעלה<br>
-      <kbd>Esc</kbd> - סגירה
-    </div>
   `;
   
   // הוספה לדף

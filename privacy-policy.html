@@ -15,6 +15,7 @@
     span.s4 {text-decoration: underline ; font-kerning: none; color: #0000e9; -webkit-text-stroke: 0px #0000e9; direction: ltr; unicode-bidi: embed}
     ul.ul1 {list-style-type: disc}
   </style>
+  <script src="accessibility.js"></script>
 </head>
 <body>
 <h1 dir="rtl" style="margin: 0.0px 0.0px 16.1px 0.0px; font: 24.0px 'Lucida Grande'; color: #266c26; -webkit-text-stroke: #266c26"><span class="s1"><b>מדיניות פרטיות</b></span></h1>
@@ -51,5 +52,27 @@
   <span style="color: #666;">|</span>
       <a href="terms-of-use.html" style="margin: 0 10px; color: #266c26; text-decoration: none;">תנאי שימוש, מידע ונגישות</a>
 </div>
+
+<!-- כפתור נגישות צף -->
+<button id="accessibility-btn" onclick="toggleAccessibilityMenu()" style="
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  z-index: 1000;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+" title="הגדרות נגישות">♿</button>
+
 </body>
 </html>
