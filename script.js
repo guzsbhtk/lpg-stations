@@ -902,3 +902,9 @@ default:
 return "שגיאה לא ידועה בקבלת מיקום";
 }
 }
+
+// הפעלת האפליקציה כשהדף נטען
+document.addEventListener('DOMContentLoaded', function() {
+console.log('📄 DOM loaded, initializing app...');
+init();
+});
