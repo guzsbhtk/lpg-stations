@@ -687,19 +687,159 @@ async function init() {
     if (pwaButton) pwaButton.style.display = 'none';
   }
   
-  statusEl.textContent = "מביא נתונים מהגיליון…";
-  let stations;
-  try {
-    const data = await fetchSheetData();
-    stations = parseStations(data.table);
-    if (!stations || stations.length === 0) {
-      statusEl.textContent = "לא נמצאו תחנות בגיליון";
+  // בדיקה אם יש נתונים מקומיים
+  const cachedStations = localStorage.getItem('cachedStations');
+  const cacheTimestamp = localStorage.getItem('stationsCacheTimestamp');
+  const now = Date.now();
+  const cacheAge = now - (cacheTimestamp ? parseInt(cacheTimestamp) : 0);
+  const twoWeeks = 14 * 24 * 60 * 60 * 1000; // 14 ימים
+  
+  // בדיקה אם עבר חודש (לא לפי מספר ימים אלא לפי חודש בפועל)
+  let cacheValid = cacheAge < twoWeeks; // תקף לשבועיים
+  
+  if (cacheTimestamp) {
+    const cacheDate = new Date(parseInt(cacheTimestamp));
+    const currentDate = new Date();
+    
+    // בדיקה אם עבר חודש (שינוי בחודש או בשנה)
+    const sameMonth = cacheDate.getMonth() === currentDate.getMonth();
+    const sameYear = cacheDate.getFullYear() === currentDate.getFullYear();
+    
+    if (!sameMonth || !sameYear) {
+      cacheValid = false; // עבר חודש - נתונים לא תקפים
+    }
+  }
+  
+  // אם יש נתונים מקומיים תקפים ואין חיבור לאינטרנט
+  if (cachedStations && cacheValid && !navigator.onLine) {
+    console.log('📱 Using cached data (offline mode)');
+    try {
+      const stations = JSON.parse(cachedStations);
+      allStations = stations;
+      
+      // חישוב גיל הנתונים להודעה
+      const daysOld = Math.floor(cacheAge / (24 * 60 * 60 * 1000));
+      const cacheDate = new Date(parseInt(cacheTimestamp));
+      const monthNames = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+      const monthName = monthNames[cacheDate.getMonth()];
+      const year = cacheDate.getFullYear();
+      
+      let statusMessage = 'מצב offline - מציג נתונים מקומיים';
+      
+      if (daysOld > 0) {
+        statusMessage += ` (נתונים מ-${monthName} ${year}, לפני ${daysOld} ימים)`;
+      } else {
+        statusMessage += ` (נתונים מ-${monthName} ${year})`;
+      }
+      
+      statusEl.innerHTML = `<div style="color: orange;">${statusMessage}</div>`;
+      renderStations(stations, null);
+      setupControls();
+      return;
+    } catch (err) {
+      console.error('Error parsing cached data:', err);
+      localStorage.removeItem('cachedStations');
+      localStorage.removeItem('stationsCacheTimestamp');
+    }
+  }
+  
+  // אם יש חיבור לאינטרנט, נסה לטעון נתונים חדשים
+  if (navigator.onLine) {
+    statusEl.textContent = "מביא נתונים מהגיליון…";
+    let stations;
+    try {
+      const data = await fetchSheetData();
+      stations = parseStations(data.table);
+      if (!stations || stations.length === 0) {
+        statusEl.textContent = "לא נמצאו תחנות בגיליון";
+        return;
+      }
+      console.log(`נטענו ${stations.length} תחנות מהגיליון`);
+      
+      // שמירת נתונים במטמון מקומי
+      localStorage.setItem('cachedStations', JSON.stringify(stations));
+      localStorage.setItem('stationsCacheTimestamp', now.toString());
+      console.log('💾 Data cached locally');
+      
+    } catch (err) {
+      console.error("Error loading data:", err);
+      
+      // אם נכשל בטעינת נתונים חדשים, נסה להשתמש בנתונים מקומיים
+      if (cachedStations) {
+        console.log('🔄 Falling back to cached data');
+        try {
+          const stations = JSON.parse(cachedStations);
+          allStations = stations;
+          
+          // חישוב גיל הנתונים להודעה
+          const daysOld = Math.floor(cacheAge / (24 * 60 * 60 * 1000));
+          const cacheDate = new Date(parseInt(cacheTimestamp));
+          const monthNames = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+          const monthName = monthNames[cacheDate.getMonth()];
+          const year = cacheDate.getFullYear();
+          
+          let statusMessage = 'לא ניתן לטעון נתונים חדשים - מציג נתונים מקומיים';
+          
+          if (daysOld > 0) {
+            statusMessage += ` (נתונים מ-${monthName} ${year}, לפני ${daysOld} ימים)`;
+          } else {
+            statusMessage += ` (נתונים מ-${monthName} ${year})`;
+          }
+          
+          statusEl.innerHTML = `<div style="color: orange;">${statusMessage}</div>`;
+          renderStations(stations, null);
+          setupControls();
+          return;
+        } catch (parseErr) {
+          console.error('Error parsing cached data:', parseErr);
+        }
+      }
+      
+      statusEl.textContent = `אירעה שגיאה בטעינת הנתונים: ${err.message}`;
       return;
     }
-    console.log(`נטענו ${stations.length} תחנות מהגיליון`);
-  } catch (err) {
-    statusEl.textContent = `אירעה שגיאה בטעינת הנתונים: ${err.message}`;
-    console.error("Error loading data:", err);
+    
+    // הגדרת התחנות מיד לאחר הטעינה - מאפשר חיפוש מיידי
+    allStations = stations;
+    
+    // הצגת כל התחנות בהתחלה (ללא מיון לפי מרחק)
+    statusEl.textContent = "מציג תחנות... מבקש נתוני מיקום לחישוב מרחקים";
+    renderStations(stations, null);
+    
+    // הפעלת חיפוש מיד
+    setupControls();
+    
+  } else {
+    // אין חיבור לאינטרנט
+    if (cachedStations) {
+      // בדיקה אם עבר חודש
+      const cacheDate = new Date(parseInt(cacheTimestamp));
+      const currentDate = new Date();
+      const sameMonth = cacheDate.getMonth() === currentDate.getMonth();
+      const sameYear = cacheDate.getFullYear() === currentDate.getFullYear();
+      
+      if (!sameMonth || !sameYear) {
+        // עבר חודש - נתונים לא תקפים
+        const monthNames = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+        const oldMonthName = monthNames[cacheDate.getMonth()];
+        const oldYear = cacheDate.getFullYear();
+        const currentMonthName = monthNames[currentDate.getMonth()];
+        const currentYear = currentDate.getFullYear();
+        
+        statusEl.innerHTML = `<div style="color: red;">אין חיבור לאינטרנט - הנתונים המקומיים לא עדכניים (מ-${oldMonthName} ${oldYear}, עכשיו ${currentMonthName} ${currentYear})</div>`;
+      } else {
+        // אותו חודש אבל יותר מ-14 ימים
+        const daysOld = Math.floor(cacheAge / (24 * 60 * 60 * 1000));
+        if (daysOld >= 14) {
+          statusEl.innerHTML = '<div style="color: red;">אין חיבור לאינטרנט - הנתונים המקומיים פגי תוקף (יותר מ-14 ימים)</div>';
+        } else {
+          statusEl.innerHTML = '<div style="color: red;">אין חיבור לאינטרנט ואין נתונים מקומיים זמינים</div>';
+        }
+      }
+    } else {
+      // אין נתונים בכלל
+      statusEl.innerHTML = '<div style="color: red;">אין חיבור לאינטרנט ואין נתונים מקומיים זמינים</div>';
+    }
     return;
   }
 
@@ -742,6 +882,32 @@ async function init() {
         requestGeolocation(allStations);
       }
     }, CONFIG.GEOLOCATION_REFRESH_MS);
+  }
+  
+  // ניקוי מטמון ישן (יותר מ-7 ימים)
+  cleanupOldCache();
+}
+
+// פונקציה לניקוי מטמון ישן
+function cleanupOldCache() {
+  try {
+    const cacheTimestamp = localStorage.getItem('stationsCacheTimestamp');
+    if (cacheTimestamp) {
+      const cacheDate = new Date(parseInt(cacheTimestamp));
+      const currentDate = new Date();
+      
+      // בדיקה אם עבר חודש (שינוי בחודש או בשנה)
+      const sameMonth = cacheDate.getMonth() === currentDate.getMonth();
+      const sameYear = cacheDate.getFullYear() === currentDate.getFullYear();
+      
+      if (!sameMonth || !sameYear) {
+        console.log('🧹 Cleaning up old cache (different month/year)');
+        localStorage.removeItem('cachedStations');
+        localStorage.removeItem('stationsCacheTimestamp');
+      }
+    }
+  } catch (err) {
+    console.error('Error cleaning up cache:', err);
   }
 }
 
@@ -929,6 +1095,59 @@ function setupControls() {
     sortSelect.addEventListener("change", applyFilters);
   }
 }
+
+// פונקציה לרענון נתונים
+async function refreshData() {
+  if (!navigator.onLine) {
+    alert('אין חיבור לאינטרנט - לא ניתן לרענן נתונים');
+    return;
+  }
+  
+  const refreshBtn = document.getElementById('refresh-btn');
+  if (refreshBtn) {
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = '⏳ טוען...';
+  }
+  
+  try {
+    statusEl.textContent = "מביא נתונים חדשים מהגיליון…";
+    const data = await fetchSheetData();
+    const stations = parseStations(data.table);
+    
+    if (!stations || stations.length === 0) {
+      statusEl.textContent = "לא נמצאו תחנות בגיליון";
+      return;
+    }
+    
+    // שמירת נתונים חדשים במטמון
+    localStorage.setItem('cachedStations', JSON.stringify(stations));
+    localStorage.setItem('stationsCacheTimestamp', Date.now().toString());
+    
+    allStations = stations;
+    statusEl.textContent = `נטענו ${stations.length} תחנות חדשות`;
+    
+    // עדכון התצוגה
+    if (!searchInput.value.trim()) {
+      renderStations(stations.slice(0, CONFIG.MAX_STATIONS_DISPLAY), userPosGlobal);
+    } else {
+      applyFilters();
+    }
+    
+    console.log('✅ Data refreshed successfully');
+    
+  } catch (err) {
+    console.error("Error refreshing data:", err);
+    statusEl.textContent = `שגיאה ברענון הנתונים: ${err.message}`;
+  } finally {
+    if (refreshBtn) {
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = '🔄 רענן';
+    }
+  }
+}
+
+// הוספת הפונקציה לחלון הגלובלי
+window.refreshData = refreshData;
 
 // תרגום קודי השגיאה של geolocation להודעות מובנות למשתמש
 function geoErrorText(code) {
