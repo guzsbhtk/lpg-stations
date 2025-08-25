@@ -1,8 +1,8 @@
 // פונקציות עזר משותפות
 function hideInstallButtons() {
-  const iosButton = document.getElementById('ios-add-to-home');
-  const androidButton = document.getElementById('android-install');
-  const pwaButton = document.getElementById('pwa-install');
+  const iosButton = document.querySelector(CONFIG.SELECTORS.IOS_BUTTON);
+  const androidButton = document.querySelector(CONFIG.SELECTORS.ANDROID_BUTTON);
+  const pwaButton = document.querySelector(CONFIG.SELECTORS.PWA_BUTTON);
   
   if (iosButton) iosButton.style.display = 'none';
   if (androidButton) androidButton.style.display = 'none';
@@ -10,16 +10,16 @@ function hideInstallButtons() {
 }
 
 function showInstallButton(buttonId, hideOthers = true) {
-  const button = document.getElementById(buttonId);
+  const button = document.querySelector(buttonId);
   if (!button) return false;
   
   button.style.display = 'flex';
   
   if (hideOthers) {
-    const allButtons = ['ios-add-to-home', 'android-install', 'pwa-install'];
-    allButtons.forEach(id => {
-      if (id !== buttonId) {
-        const otherButton = document.getElementById(id);
+    const allButtons = [CONFIG.SELECTORS.IOS_BUTTON, CONFIG.SELECTORS.ANDROID_BUTTON, CONFIG.SELECTORS.PWA_BUTTON];
+    allButtons.forEach(selector => {
+      if (selector !== buttonId) {
+        const otherButton = document.querySelector(selector);
         if (otherButton) otherButton.style.display = 'none';
       }
     });
@@ -42,4 +42,17 @@ function logInstallFailure(reasons) {
       console.log(`- ${reason.message}`);
     }
   });
+}
+
+// Debounce utility – prevents excessive calls on frequent events (e.g., input)
+function debounce(func, wait) {
+  let timeoutId;
+  return function() {
+    const context = this;
+    const args = arguments;
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(function() {
+      func.apply(context, args);
+    }, wait);
+  };
 }

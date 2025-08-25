@@ -8,27 +8,28 @@ async function init() {
     hideInstallButtons();
   }
   
-  statusEl.textContent = "מביא נתונים מהגיליון…";
+  appState.setLoading(true);
+  
   let stations;
   try {
     const data = await fetchSheetData();
     stations = parseStations(data.table);
     if (!stations || stations.length === 0) {
-      statusEl.textContent = "לא נמצאו תחנות בגיליון";
+      appState.showError(CONFIG.MESSAGES.NO_STATIONS_FOUND);
       return;
     }
     console.log(`נטענו ${stations.length} תחנות מהגיליון`);
   } catch (err) {
-    statusEl.textContent = `אירעה שגיאה בטעינת הנתונים: ${err.message}`;
+    appState.showError(`אירעה שגיאה בטעינת הנתונים: ${err.message}`);
     console.error("Error loading data:", err);
     return;
   }
 
   // הגדרת התחנות מיד לאחר הטעינה - מאפשר חיפוש מיידי
-  allStations = stations;
+  appState.setStations(stations);
   
   // הצגת כל התחנות בהתחלה (ללא מיון לפי מרחק)
-  statusEl.textContent = "מציג תחנות... מבקש נתוני מיקום לחישוב מרחקים";
+  appState.setLoading(false);
   renderStations(stations, null);
   
   // הפעלת חיפוש מיד
@@ -59,8 +60,9 @@ async function init() {
   // רענון מיקום אוטומטי כל דקה
   if (CONFIG.GEOLOCATION_REFRESH_MS > 0) {
     setInterval(() => {
-      if (allStations && allStations.length > 0) {
-        requestGeolocation(allStations);
+      const stations = appState.getStations();
+      if (stations && stations.length > 0) {
+        requestGeolocation(stations);
       }
     }, CONFIG.GEOLOCATION_REFRESH_MS);
   }
@@ -75,7 +77,8 @@ window.addEventListener('online', function() {
   }
   
   // רענון נתונים אם אין תחנות
-  if (!allStations || allStations.length === 0) {
+  const stations = appState.getStations();
+  if (!stations || stations.length === 0) {
     init();
   }
 });

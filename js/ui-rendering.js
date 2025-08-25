@@ -1,23 +1,14 @@
 // רינדור ממשק משתמש
-const statusEl = document.getElementById("status");
-const stationsContainer = document.getElementById("stations");
-const searchInput = document.getElementById("search");
-const distanceRange = document.getElementById("distanceRange");
-const distanceValue = document.getElementById("distanceValue");
-const sortSelect = document.getElementById("sortBy");
-
-let allStations = [];
-let userPosGlobal = null;
 
 function renderStations(stations, userPos) {
+  const stationsContainer = appState.getElement('stationsContainer');
   stationsContainer.innerHTML = "";
-  const daySuffix = `.${new Date().getDate() * 2}`; // נקודה + יום*2
+  const daySuffix = `${CONFIG.SECURITY.DAY_SUFFIX_PREFIX}${new Date().getDate() * CONFIG.SECURITY.DAY_SUFFIX_MULTIPLIER}`;
   stations.forEach((st) => {
     const div = document.createElement("div");
     div.className = "station";
 
-    const UPDATE_FORM_BASE =
-      "https://docs.google.com/forms/d/e/1FAIpQLSdVxdEhqTyuI9wytoStlha4twnct3misgfuzZj04Fx6W9bvaQ/viewform?usp=pp_url&entry.1345625893=";
+    const UPDATE_FORM_BASE = CONFIG.URLS.UPDATE_FORM_BASE;
 
     const title = document.createElement("h2");
     title.textContent = st.city ? `${st.name} ${st.city}` : st.name;
@@ -64,7 +55,7 @@ function renderStations(stations, userPos) {
     actions.appendChild(wazeLink);
     actions.appendChild(mapsLink);
 
-    // כפתור עדכון מחיר אם בטווח 1 ק"מ
+    // כפתור עדכון מחיר אם בטווח מוגדר
     if (st.distance !== undefined && st.distance <= CONFIG.UPDATE_DISTANCE_THRESHOLD) {
       const updateLink = document.createElement("a");
       updateLink.className = "update";
@@ -81,19 +72,49 @@ function renderStations(stations, userPos) {
 }
 
 function applyFilters() {
+  const stationsContainer = appState.getElement('stationsContainer');
+  const searchInput = appState.getElement('searchInput');
+  const distanceRange = appState.getElement('distanceRange');
+  const distanceValue = appState.getElement('distanceValue');
+  const sortSelect = appState.getElement('sortSelect');
+  
+  const allStations = appState.getStations();
+  const userPosGlobal = appState.getUserPosition();
+  
   if (!allStations || allStations.length === 0) {
-    stationsContainer.innerHTML = '<div class="error-message" role="alert">אין תחנות להצגה</div>';
+    appState.showNoStations();
     return;
   }
 
   let list = allStations;
 
-  // חיפוש טקסט
+  // חיפוש טקסט עם דירוג
   const term = searchInput.value.trim().toLowerCase();
   if (term) {
-    list = list.filter((st) =>
-      [st.name, st.city].some((str) => str && isTextMatch(term, str))
-    );
+    // בדיקה זמנית לניפוי באגים
+    if (term === 'קריית שמ') {
+      console.log('🔍 Testing search for "קריית שמ"');
+      const testStation = list.find(st => st.name && st.name.includes('קרית שמונה'));
+      if (testStation) {
+        console.log('Found test station:', testStation.name);
+        debugTextMatch(term, testStation.name);
+      }
+    }
+    
+    // הוספת ציון דיוק לכל תחנה
+    list = list.map((st) => {
+      const nameScore = st.name ? getTextMatchScore(term, st.name) : 0;
+      const cityScore = st.city ? getTextMatchScore(term, st.city) : 0;
+      const maxScore = Math.max(nameScore, cityScore);
+      
+      return {
+        ...st,
+        searchScore: maxScore
+      };
+    }).filter((st) => st.searchScore > 0); // רק תחנות עם התאמה
+    
+    // מיון לפי ציון דיוק (גבוה יותר קודם)
+    list.sort((a, b) => b.searchScore - a.searchScore);
   }
 
   // סינון מרחק
@@ -109,7 +130,10 @@ function applyFilters() {
 
   // מיון
   const sortBy = sortSelect.value;
-  if (sortBy === "price") {
+  if (sortBy === "relevance" && term) {
+    // מיון לפי דיוק החיפוש (כבר ממוין מהחיפוש)
+    // לא צריך לעשות כלום כי כבר ממוין
+  } else if (sortBy === "price") {
     list = list.slice().sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
   } else if (sortBy === "distance" && userPosGlobal) {
     list = list.slice().sort((a, b) => a.distance - b.distance);
@@ -117,7 +141,7 @@ function applyFilters() {
 
   // הצגת הודעה אם אין תוצאות
   if (list.length === 0) {
-    stationsContainer.innerHTML = '<div class="error-message" role="alert">לא נמצאו תחנות התואמות לחיפוש</div>';
+    appState.showNoSearchResults();
     return;
   }
 
@@ -125,16 +149,20 @@ function applyFilters() {
 }
 
 // חיפוש ידני
-let controlsSetup = false;
 function setupControls() {
-  if (controlsSetup) return; // מניעת הגדרה כפולה
-  controlsSetup = true;
+  if (appState.isControlsSetup()) return; // מניעת הגדרה כפולה
+  appState.setControlsSetup(true);
+  
+  const searchInput = appState.getElement('searchInput');
+  const distanceRange = appState.getElement('distanceRange');
+  const sortSelect = appState.getElement('sortSelect');
   
   if (searchInput) {
-    searchInput.addEventListener("input", applyFilters);
+    // צמצום קריאות עיבוד בעת הקלדה
+    searchInput.addEventListener("input", debounce(applyFilters, CONFIG.UI_DEBUG_DELAY + 50));
   }
   if (distanceRange) {
-    distanceRange.addEventListener("input", applyFilters);
+    distanceRange.addEventListener("input", debounce(applyFilters, CONFIG.UI_DEBUG_DELAY));
   }
   if (sortSelect) {
     sortSelect.addEventListener("change", applyFilters);

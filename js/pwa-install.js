@@ -79,8 +79,8 @@ function showIOSAddToHomeButton() {
     return;
   }
   
-  const addToHomeButton = document.getElementById('ios-add-to-home');
-  const androidInstallButton = document.getElementById('android-install');
+  const addToHomeButton = document.querySelector(CONFIG.SELECTORS.IOS_BUTTON);
+  const androidInstallButton = document.querySelector(CONFIG.SELECTORS.ANDROID_BUTTON);
   
   // דיבוג - הדפסת מידע לקונסול
   logInstallDebug('iOS Add to Home', {
@@ -134,8 +134,8 @@ function showAndroidInstallButton() {
     return;
   }
   
-  const androidInstallButton = document.getElementById('android-install');
-  const addToHomeButton = document.getElementById('ios-add-to-home');
+  const androidInstallButton = document.querySelector(CONFIG.SELECTORS.ANDROID_BUTTON);
+  const addToHomeButton = document.querySelector(CONFIG.SELECTORS.IOS_BUTTON);
 
   logInstallDebug('Android Install', {
     'isMobile()': isMobile(),
@@ -163,14 +163,13 @@ function showAndroidInstallButton() {
 }
 
 function installAndroidApp() {
-  const playStoreUrl = 'https://play.google.com/store/apps/details?id=io.github.guzsbhtk.twa';
-  console.log('Opening Play Store:', playStoreUrl);
-  window.open(playStoreUrl, '_blank');
+  console.log('Opening Play Store:', CONFIG.URLS.PLAY_STORE);
+  window.open(CONFIG.URLS.PLAY_STORE, '_blank');
 }
 
 function showAddToHomeInstructions() {
-  const overlay = document.getElementById('overlay');
-  const instructions = document.getElementById('add-to-home-instructions');
+  const overlay = document.querySelector(CONFIG.SELECTORS.OVERLAY);
+  const instructions = document.querySelector(CONFIG.SELECTORS.INSTRUCTIONS);
   
   if (overlay && instructions) {
     overlay.style.display = 'block';
@@ -179,8 +178,8 @@ function showAddToHomeInstructions() {
 }
 
 function hideAddToHomeInstructions() {
-  const overlay = document.getElementById('overlay');
-  const instructions = document.getElementById('add-to-home-instructions');
+  const overlay = document.querySelector(CONFIG.SELECTORS.OVERLAY);
+  const instructions = document.querySelector(CONFIG.SELECTORS.INSTRUCTIONS);
   
   if (overlay && instructions) {
     overlay.style.display = 'none';
@@ -196,7 +195,7 @@ window.installPWA = installPWA;
 
 // הוספת event listener לסגירת ההודעות בלחיצה על הרקע
 document.addEventListener('DOMContentLoaded', function() {
-  const overlay = document.getElementById('overlay');
+  const overlay = document.querySelector(CONFIG.SELECTORS.OVERLAY);
   if (overlay) {
     overlay.addEventListener('click', hideAddToHomeInstructions);
   }

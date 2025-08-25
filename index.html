@@ -214,9 +214,24 @@ background: rgba(0,0,0,0.5);
 z-index: 1999;
 display: none;
 }
+/* Offline banner */
+#offline-message {
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+background: #ffc107;
+color: #000;
+text-align: center;
+padding: 8px 12px;
+z-index: 3000;
+display: none;
+font-weight: 600;
+}
 </style>
 </head>
 <body>
+<div id="offline-message" role="alert" aria-live="polite">אין חיבור לאינטרנט — מוצג תוכן שמור</div>
 <header>
 <h1>תחנות גפ"מ קרובות אלי</h1>
 </header>
@@ -263,6 +278,7 @@ aria-label="חיפוש תחנות גפ״מ לפי שם או עיר" />
 aria-label="מרחק מקסימלי בקילומטרים" 
 aria-describedby="distanceValue" />
 <select id="sortBy" aria-label="סדר מיון תחנות">
+<option value="relevance">מיון לפי דיוק החיפוש</option>
 <option value="distance">מיון לפי מרחק</option>
 <option value="price">מיון לפי מחיר</option>
 </select>
@@ -310,6 +326,7 @@ aria-describedby="distanceValue" />
   <script src="js/pwa-install.js"></script>
   <script src="js/ui-rendering.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/debug.js"></script>
 <script src="accessibility.js"></script>
 </body>
 </html> 

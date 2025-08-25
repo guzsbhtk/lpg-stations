@@ -1,5 +1,4 @@
 // עיבוד נתונים וחיפוש
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/1FDx3CdFpCLxQAKFRqQ1DpiF8l6k46L6M6hWoahuGB30/gviz/tq?tqx=out:json";
 
 // פונקציה בטוחה לפיענוח תגובת GViz
 function parseGVizResponse(text) {
@@ -52,21 +51,25 @@ function normalizeHebrewText(text) {
     .trim();
 }
 
-// חיפוש מתקדם עם דמיון טקסט
-function isTextMatch(searchTerm, targetText) {
+// חיפוש מתקדם עם דמיון טקסט - מחזיר ציון דיוק
+function getTextMatchScore(searchTerm, targetText) {
   const normalizedSearch = normalizeHebrewText(searchTerm);
   const normalizedTarget = normalizeHebrewText(targetText);
   
-  // חיפוש רגיל - מכיל את המחרוזת
+  // חיפוש מדויק - מכיל את המחרוזת בדיוק
   if (normalizedTarget.includes(normalizedSearch)) {
-    return true;
+    // אם זה מתחיל בדיוק עם החיפוש - ציון גבוה יותר
+    if (normalizedTarget.startsWith(normalizedSearch)) {
+      return 100; // ציון מקסימלי
+    }
+    return 90; // ציון גבוה
   }
   
   // חיפוש בתחילת מילים - לדוגמה "קרית ש" ימצא "קריית שמונה"
   const targetWords = normalizedTarget.split(' ');
   const searchWords = normalizedSearch.split(' ');
   
-  // בדיקה אם כל מילות החיפוש מופיעות בתחילת מילים ברצף
+  // בדיקה אם כל מילות החיפוש מופיעות בתחילת מילים ברצף (בכל מקום בטקסט)
   for (let i = 0; i <= targetWords.length - searchWords.length; i++) {
     let allMatch = true;
     for (let j = 0; j < searchWords.length; j++) {
@@ -80,19 +83,61 @@ function isTextMatch(searchTerm, targetText) {
       }
     }
     if (allMatch) {
-      return true;
+      return 80; // ציון גבוה לחיפוש בתחילת מילים
     }
   }
   
-  // חיפוש עם סובלנות לשגיאה אחת (Levenshtein distance)
-  if (normalizedSearch.length >= 3) {
-    return levenshteinDistance(normalizedSearch, normalizedTarget) <= 1 ||
-           normalizedTarget.split(' ').some(word => 
-             levenshteinDistance(normalizedSearch, word) <= 1
-           );
+  // חיפוש חלקי - בדיקה אם מילות החיפוש מופיעות בכל מקום בטקסט
+  const searchWordsFound = searchWords.every(searchWord => 
+    targetWords.some(targetWord => targetWord.startsWith(searchWord))
+  );
+  if (searchWordsFound) {
+    return 70; // ציון בינוני לחיפוש חלקי
   }
   
-  return false;
+  // חיפוש עם סובלנות לשגיאות (Levenshtein distance)
+  if (normalizedSearch.length >= CONFIG.SEARCH.MIN_LENGTH_FOR_FUZZY) {
+    const fullDistance = levenshteinDistance(normalizedSearch, normalizedTarget);
+    const wordDistances = normalizedTarget.split(' ').map(word => 
+      levenshteinDistance(normalizedSearch, word)
+    );
+    const minWordDistance = Math.min(...wordDistances);
+    
+    // אם יש התאמה עם סובלנות לשגיאות
+    if (fullDistance <= CONFIG.SEARCH.MAX_LEVENSHTEIN_DISTANCE || 
+        minWordDistance <= CONFIG.SEARCH.MAX_LEVENSHTEIN_DISTANCE) {
+      
+      // חישוב ציון על בסיס המרחק - ככל שהמרחק קטן יותר, הציון גבוה יותר
+      const bestDistance = Math.min(fullDistance, minWordDistance);
+      const maxDistance = CONFIG.SEARCH.MAX_LEVENSHTEIN_DISTANCE;
+      const score = Math.max(0, 70 - (bestDistance * 20)); // ציון בין 50-70
+      return score;
+    }
+  }
+  
+  return 0; // אין התאמה
+}
+
+// פונקציה קיימת לתאימות לאחור
+function isTextMatch(searchTerm, targetText) {
+  return getTextMatchScore(searchTerm, targetText) > 0;
+}
+
+// פונקציה לבדיקת חיפוש (לניפוי באגים)
+function debugTextMatch(searchTerm, targetText) {
+  const normalizedSearch = normalizeHebrewText(searchTerm);
+  const normalizedTarget = normalizeHebrewText(targetText);
+  
+  console.log('🔍 Debug Text Match:');
+  console.log('Search term:', searchTerm);
+  console.log('Target text:', targetText);
+  console.log('Normalized search:', normalizedSearch);
+  console.log('Normalized target:', normalizedTarget);
+  
+  const score = getTextMatchScore(searchTerm, targetText);
+  console.log('Match score:', score);
+  
+  return score;
 }
 
 // חישוב מרחק לוונשטיין (Levenshtein distance) - מספר שינויים מינימלי
@@ -148,9 +193,9 @@ async function fetchSheetData() {
     }
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // timeout של 15 שניות
+    const timeoutId = setTimeout(() => controller.abort(), CONFIG.FETCH_TIMEOUT);
     
-    const res = await fetch(SHEET_URL, { 
+    const res = await fetch(CONFIG.URLS.SHEET, {
       signal: controller.signal,
       headers: {
         'Cache-Control': 'no-cache',

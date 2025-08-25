@@ -1,14 +1,4 @@
 // ניהול מיקום גיאוגרפי
-const CONFIG = {
-  GEOLOCATION_TIMEOUT: 60000,
-  MAX_STATIONS_DISPLAY: 10,
-  UPDATE_DISTANCE_THRESHOLD: 1,
-  EARTH_RADIUS_KM: 6371,
-  GEOLOCATION_MAX_AGE_HIGH: 30000,
-  GEOLOCATION_MAX_AGE_LOW: 600000,
-  // רענון מיקום כל דקה (60 שניות)
-  GEOLOCATION_REFRESH_MS: 60000
-};
 
 // חישוב מרחק לפי נוסחת האברסין
 function distanceKm(lat1, lon1, lat2, lon2) {
@@ -56,13 +46,13 @@ function requestGeolocation(stations) {
     // נתחיל עם הגדרות פשוטות
     const simpleOptions = {
       enableHighAccuracy: false,
-      timeout: 10000,
+      timeout: CONFIG.GEOLOCATION_TIMEOUT / 6,
       maximumAge: 0
     };
     
     const accurateOptions = {
       enableHighAccuracy: true,
-      timeout: 15000,
+      timeout: CONFIG.GEOLOCATION_TIMEOUT / 4,
       maximumAge: 0
     };
     
@@ -80,7 +70,7 @@ function requestGeolocation(stations) {
       } else if (attemptCount === 2) {
         currentOptions = accurateOptions; // ניסיון שני - מדויק יותר
       } else {
-        currentOptions = { enableHighAccuracy: false, timeout: 30000, maximumAge: 300000 }; // ניסיון אחרון - סבלני
+        currentOptions = { enableHighAccuracy: false, timeout: CONFIG.GEOLOCATION_TIMEOUT / 2, maximumAge: CONFIG.GEOLOCATION_MAX_AGE_LOW / 2 }; // ניסיון אחרון - סבלני
       }
       
       console.log(`Using options:`, currentOptions);
@@ -106,10 +96,14 @@ function requestGeolocation(stations) {
             (st) => (st.distance = distanceKm(userPos.lat, userPos.lng, st.lat, st.lng))
           );
           stations.sort((a, b) => a.distance - b.distance);
-          allStations = stations;
-          userPosGlobal = userPos;
-          statusEl.textContent = "";
+          appState.setStations(stations);
+          appState.setUserPosition(userPos);
+          
+          const statusEl = appState.getElement('status');
+          if (statusEl) statusEl.textContent = "";
+          
           // עדכון התצוגה עם מרחקים אם אין חיפוש פעיל
+          const searchInput = appState.getElement('searchInput');
           if (!searchInput.value.trim()) {
             renderStations(stations.slice(0, CONFIG.MAX_STATIONS_DISPLAY), userPos);
           } else {
@@ -134,11 +128,11 @@ function requestGeolocation(stations) {
           console.log(`📋 Error details: ${errorDetails[err.code] || 'Unknown error'}`);
           
           if (attemptCount < maxAttempts) {
-            console.log(`⏳ Trying again in 1 second...`);
-            setTimeout(tryGeolocation, 1000);
+            console.log(`⏳ Trying again in ${CONFIG.GEOLOCATION_RETRY_DELAY}ms...`);
+            setTimeout(tryGeolocation, CONFIG.GEOLOCATION_RETRY_DELAY);
           } else {
             console.log('🚫 All geolocation attempts failed');
-            statusEl.innerHTML = `<div class="error-message" role="alert">${geoErrorText(err.code)} – מציג רשימה מלאה</div>`;
+            appState.showError(`${geoErrorText(err.code)} – מציג רשימה מלאה`);
           }
         },
         currentOptions
@@ -148,21 +142,12 @@ function requestGeolocation(stations) {
     // התחלת הניסיונות
     tryGeolocation();
   } else {
-    statusEl.innerHTML = '<div class="error-message" role="alert">הדפדפן לא תומך במיקום – מציג רשימה ללא סינון</div>';
+    appState.showError(CONFIG.MESSAGES.GEOLOCATION_NOT_SUPPORTED);
     // התחנות כבר מוצגות, רק נעדכן את הסטטוס
   }
 }
 
 // תרגום קודי השגיאה של geolocation להודעות מובנות למשתמש
 function geoErrorText(code) {
-  switch (code) {
-    case 1: // PERMISSION_DENIED
-      return "לא אושרה גישה למיקום";
-    case 2: // POSITION_UNAVAILABLE
-      return "לא התקבלו נתוני מיקום";
-    case 3: // TIMEOUT
-      return "הבקשה לקבלת מיקום חרגה ממגבלת הזמן";
-    default:
-      return "שגיאה לא ידועה בקבלת מיקום";
-  }
+  return USER_ERROR_MESSAGES[code] || "שגיאה לא ידועה בקבלת מיקום";
 }
