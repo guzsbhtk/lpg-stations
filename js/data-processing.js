@@ -1,5 +1,4 @@
 // עיבוד נתונים וחיפוש
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/1FDx3CdFpCLxQAKFRqQ1DpiF8l6k46L6M6hWoahuGB30/gviz/tq?tqx=out:json";
 
 // פונקציה בטוחה לפיענוח תגובת GViz
 function parseGVizResponse(text) {
@@ -84,11 +83,13 @@ function isTextMatch(searchTerm, targetText) {
     }
   }
   
-  // חיפוש עם סובלנות לשגיאה אחת (Levenshtein distance)
-  if (normalizedSearch.length >= 3) {
-    return levenshteinDistance(normalizedSearch, normalizedTarget) <= 1 ||
+  // חיפוש עם סובלנות לשגיאות (Levenshtein distance)
+
+
+  if (normalizedSearch.length >= CONFIG.SEARCH.MIN_LENGTH_FOR_FUZZY) {
+    return levenshteinDistance(normalizedSearch, normalizedTarget) <= CONFIG.SEARCH.MAX_LEVENSHTEIN_DISTANCE ||
            normalizedTarget.split(' ').some(word => 
-             levenshteinDistance(normalizedSearch, word) <= 1
+             levenshteinDistance(normalizedSearch, word) <= CONFIG.SEARCH.MAX_LEVENSHTEIN_DISTANCE
            );
   }
   
@@ -148,9 +149,9 @@ async function fetchSheetData() {
     }
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // timeout של 15 שניות
+    const timeoutId = setTimeout(() => controller.abort(), CONFIG.FETCH_TIMEOUT);
     
-    const res = await fetch(SHEET_URL, { 
+    const res = await fetch(CONFIG.URLS.SHEET, { 
       signal: controller.signal,
       headers: {
         'Cache-Control': 'no-cache',

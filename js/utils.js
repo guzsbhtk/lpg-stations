@@ -1,12 +1,32 @@
 // פונקציות עזר משותפות
 function hideInstallButtons() {
-  const iosButton = document.getElementById('ios-add-to-home');
-  const androidButton = document.getElementById('android-install');
-  const pwaButton = document.getElementById('pwa-install');
+  const iosButton = document.getElementById(CONFIG.SELECTORS.IOS_BUTTON.slice(1));
+  const androidButton = document.getElementById(CONFIG.SELECTORS.ANDROID_BUTTON.slice(1));
+  const pwaButton = document.getElementById(CONFIG.SELECTORS.PWA_BUTTON.slice(1));
   
   if (iosButton) iosButton.style.display = 'none';
   if (androidButton) androidButton.style.display = 'none';
   if (pwaButton) pwaButton.style.display = 'none';
+}
+
+// יצירת הודעת שגיאה
+function createErrorMessage(message) {
+  return `<div class="error-message" role="alert">${message}</div>`;
+}
+
+// עדכון סטטוס עם הודעה
+function updateStatus(message) {
+  const statusEl = document.querySelector(CONFIG.SELECTORS.STATUS);
+  if (statusEl) {
+    statusEl.innerHTML = createErrorMessage(message);
+  }
+}
+
+// ניקוי container ועדכון עם הודעה
+function updateContainer(container, message) {
+  if (container) {
+    container.innerHTML = createErrorMessage(message);
+  }
 }
 
 function showInstallButton(buttonId, hideOthers = true) {
