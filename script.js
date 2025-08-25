@@ -326,15 +326,28 @@ document.addEventListener('DOMContentLoaded', function() {
 // פונקציה בטוחה לפיענוח תגובת GViz
 function parseGVizResponse(text) {
   try {
+    if (!text || typeof text !== 'string') {
+      throw new Error('Invalid response: not a string');
+    }
+    
     const start = text.indexOf('{"');
     const end = text.lastIndexOf('}');
     if (start === -1 || end === -1) {
       throw new Error('Invalid GViz response format');
     }
+    
     const jsonStr = text.substring(start, end + 1);
-    return JSON.parse(jsonStr);
+    const parsed = JSON.parse(jsonStr);
+    
+    // בדיקת תקינות נוספת
+    if (!parsed || typeof parsed !== 'object') {
+      throw new Error('Invalid parsed response structure');
+    }
+    
+    return parsed;
   } catch (err) {
     console.error('Failed to parse GViz response:', err);
+    console.error('Response text:', text ? text.substring(0, 200) + '...' : 'null');
     throw new Error('לא ניתן לפענח את תגובת השרת');
   }
 }
@@ -450,15 +463,43 @@ function validateStation(station) {
 // פונקציה להבאת הנתונים מהגיליון
 async function fetchSheetData() {
   try {
-    const res = await fetch(SHEET_URL);
+    // בדיקת חיבור לאינטרנט
+    if (!navigator.onLine) {
+      throw new Error('אין חיבור לאינטרנט');
+    }
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // timeout של 15 שניות
+    
+    const res = await fetch(SHEET_URL, {
+      signal: controller.signal,
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
+    
+    clearTimeout(timeoutId);
+    
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
+    
     const text = await res.text();
     const data = parseGVizResponse(text);
     return data;
   } catch (err) {
     console.error("שגיאה בשליפת נתונים", err);
+    
+    // טיפול מיוחד בשגיאות
+    if (err.name === 'AbortError') {
+      throw new Error('הבקשה חרגה ממגבלת הזמן');
+    } else if (err.message.includes('אין חיבור לאינטרנט')) {
+      throw new Error('אין חיבור לאינטרנט - נסה שוב מאוחר יותר');
+    } else if (err.message.includes('HTTP error! status: 429')) {
+      throw new Error('יותר מדי בקשות - נסה שוב בעוד דקה');
+    }
+    
     throw err;
   }
 }
@@ -1156,5 +1197,25 @@ function geoErrorText(code) {
       return "שגיאה לא ידועה בקבלת מיקום";
   }
 }
+
+// Event listeners למצב online/offline
+window.addEventListener('online', () => {
+  console.log('🟢 Connection restored');
+  if (statusEl) {
+    statusEl.innerHTML = '<div style="color: green;">חיבור לאינטרנט שוחזר</div>';
+    setTimeout(() => {
+      if (allStations.length === 0) {
+        init(); // נסה לטעון נתונים מחדש אם אין תחנות
+      }
+    }, 1000);
+  }
+});
+
+window.addEventListener('offline', () => {
+  console.log('🔴 Connection lost');
+  if (statusEl) {
+    statusEl.innerHTML = '<div style="color: orange;">אין חיבור לאינטרנט - מציג נתונים מקומיים</div>';
+  }
+});
 
 document.addEventListener("DOMContentLoaded", init); 
