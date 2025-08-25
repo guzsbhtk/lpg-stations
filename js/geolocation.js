@@ -22,6 +22,12 @@ function toRad(deg) {
 // פונקציה נפרדת לבקשת מיקום שרצה במקביל
 function requestGeolocation(stations) {
   if (navigator.geolocation) {
+    // הצגת הודעה למשתמש על חיפוש המיקום
+    const statusEl = appState.getElement('status');
+    if (statusEl) {
+      statusEl.textContent = CONFIG.MESSAGES.SEARCHING_LOCATION;
+    }
+    
     console.log('🔍 Geolocation Debug:', {
       isDesktop: !isMobile(),
       isMobile: isMobile(),

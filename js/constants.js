@@ -54,6 +54,7 @@ const CONFIG = {
     NO_SEARCH_RESULTS: "לא נמצאו תחנות התואמות לחיפוש",
     LOADING: "מביא נתונים מהגיליון…",
     LOADING_LOCATION: "מציג תחנות... מבקש נתוני מיקום לחישוב מרחקים",
+    SEARCHING_LOCATION: "🔍 מחפש את המיקום המדויק שלך...",
     NO_STATIONS_FOUND: "לא נמצאו תחנות בגיליון",
     GEOLOCATION_NOT_SUPPORTED: "הדפדפן לא תומך במיקום – מציג רשימה ללא סינון"
   }
