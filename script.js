@@ -743,7 +743,7 @@ async function init() {
     }
   }
   
-  // אם יש חיבור לאינטרנט, נסה לטעון נתונים חדשים
+  // נסה לטעון נתונים חדשים אם יש חיבור לאינטרנט
   if (navigator.onLine) {
     statusEl.textContent = "מביא נתונים מהגיליון…";
     let stations;
@@ -761,11 +761,21 @@ async function init() {
       localStorage.setItem('stationsCacheTimestamp', now.toString());
       console.log('💾 Data cached locally');
       
+      // הגדרת התחנות מיד לאחר הטעינה - מאפשר חיפוש מיידי
+      allStations = stations;
+      
+      // הצגת כל התחנות בהתחלה (ללא מיון לפי מרחק)
+      statusEl.textContent = "מציג תחנות... מבקש נתוני מיקום לחישוב מרחקים";
+      renderStations(stations, null);
+      
+      // הפעלת חיפוש מיד
+      setupControls();
+      
     } catch (err) {
       console.error("Error loading data:", err);
       
       // אם נכשל בטעינת נתונים חדשים, נסה להשתמש בנתונים מקומיים
-      if (cachedStations) {
+      if (cachedStations && cacheValid) {
         console.log('🔄 Falling back to cached data');
         try {
           const stations = JSON.parse(cachedStations);
@@ -795,22 +805,47 @@ async function init() {
         }
       }
       
+      // אם אין נתונים מקומיים תקפים, הצג שגיאה
       statusEl.textContent = `אירעה שגיאה בטעינת הנתונים: ${err.message}`;
       return;
     }
     
-    // הגדרת התחנות מיד לאחר הטעינה - מאפשר חיפוש מיידי
-    allStations = stations;
-    
-    // הצגת כל התחנות בהתחלה (ללא מיון לפי מרחק)
-    statusEl.textContent = "מציג תחנות... מבקש נתוני מיקום לחישוב מרחקים";
-    renderStations(stations, null);
-    
-    // הפעלת חיפוש מיד
-    setupControls();
-    
   } else {
     // אין חיבור לאינטרנט
+    if (cachedStations && cacheValid) {
+      // יש נתונים מקומיים תקפים - הצג אותם
+      console.log('📱 Using cached data (offline mode)');
+      try {
+        const stations = JSON.parse(cachedStations);
+        allStations = stations;
+        
+        // חישוב גיל הנתונים להודעה
+        const daysOld = Math.floor(cacheAge / (24 * 60 * 60 * 1000));
+        const cacheDate = new Date(parseInt(cacheTimestamp));
+        const monthNames = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+        const monthName = monthNames[cacheDate.getMonth()];
+        const year = cacheDate.getFullYear();
+        
+        let statusMessage = 'מצב offline - מציג נתונים מקומיים';
+        
+        if (daysOld > 0) {
+          statusMessage += ` (נתונים מ-${monthName} ${year}, לפני ${daysOld} ימים)`;
+        } else {
+          statusMessage += ` (נתונים מ-${monthName} ${year})`;
+        }
+        
+        statusEl.innerHTML = `<div style="color: orange;">${statusMessage}</div>`;
+        renderStations(stations, null);
+        setupControls();
+        return;
+      } catch (err) {
+        console.error('Error parsing cached data:', err);
+        localStorage.removeItem('cachedStations');
+        localStorage.removeItem('stationsCacheTimestamp');
+      }
+    }
+    
+    // אין נתונים מקומיים תקפים
     if (cachedStations) {
       // בדיקה אם עבר חודש
       const cacheDate = new Date(parseInt(cacheTimestamp));
