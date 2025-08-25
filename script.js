@@ -447,8 +447,11 @@ function validateStation(station) {
   return true;
 }
 
-// פונקציה להבאת הנתונים מהגיליון
-async function fetchSheetData() {
+// פונקציה להבאת הנתונים מהגיליון עם retry
+async function fetchSheetData(retryCount = 0) {
+  const maxRetries = 3;
+  const retryDelay = 1000 * Math.pow(2, retryCount); // Exponential backoff
+  
   try {
     const res = await fetch(SHEET_URL);
     if (!res.ok) {
@@ -458,9 +461,56 @@ async function fetchSheetData() {
     const data = parseGVizResponse(text);
     return data;
   } catch (err) {
-    console.error("שגיאה בשליפת נתונים", err);
-    throw err;
+    console.error(`שגיאה בשליפת נתונים (ניסיון ${retryCount + 1}/${maxRetries})`, err);
+    
+    if (retryCount < maxRetries) {
+      console.log(`מנסה שוב בעוד ${retryDelay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+      return fetchSheetData(retryCount + 1);
+    }
+    
+    // אם כל הניסיונות נכשלו, נסה לטעון מ-cache
+    try {
+      const cachedData = await loadFromCache();
+      if (cachedData) {
+        console.log('טוען נתונים מ-cache...');
+        return cachedData;
+      }
+    } catch (cacheErr) {
+      console.error('שגיאה בטעינה מ-cache:', cacheErr);
+    }
+    
+    throw new Error(`לא ניתן לטעון נתונים לאחר ${maxRetries} ניסיונות`);
   }
+}
+
+// פונקציה לשמירה ב-cache
+async function saveToCache(data) {
+  try {
+    if ('caches' in window) {
+      const cache = await caches.open('lpg-stations-data');
+      await cache.put('/api/stations', new Response(JSON.stringify(data)));
+    }
+  } catch (err) {
+    console.error('שגיאה בשמירה ב-cache:', err);
+  }
+}
+
+// פונקציה לטעינה מ-cache
+async function loadFromCache() {
+  try {
+    if ('caches' in window) {
+      const cache = await caches.open('lpg-stations-data');
+      const response = await cache.match('/api/stations');
+      if (response) {
+        const data = await response.json();
+        return data;
+      }
+    }
+  } catch (err) {
+    console.error('שגיאה בטעינה מ-cache:', err);
+  }
+  return null;
 }
 
 // פענוח הנתונים לג’ייסון של תחנות
@@ -631,8 +681,37 @@ function renderStations(stations, userPos) {
   });
 }
 
+// Offline detection
+function setupOfflineDetection() {
+  const offlineIndicator = document.createElement('div');
+  offlineIndicator.className = 'offline-indicator';
+  offlineIndicator.textContent = 'אין חיבור לאינטרנט - מציג נתונים מ-cache';
+  document.body.appendChild(offlineIndicator);
+
+  function updateOnlineStatus() {
+    if (navigator.onLine) {
+      offlineIndicator.classList.remove('show');
+    } else {
+      offlineIndicator.classList.add('show');
+    }
+  }
+
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  
+  // בדיקה ראשונית
+  updateOnlineStatus();
+}
+
+// הוספת offline detection ל-init
 async function init() {
   console.log('🚀 init() function called');
+  
+  // הגדרת offline detection
+  setupOfflineDetection();
+  
+  // הצג loading state
+  showLoadingState();
   
   // הסתר את כל כפתורי ההתקנה אם האפליקציה כבר מותקנת
   if (isStandalone()) {
@@ -652,12 +731,17 @@ async function init() {
     const data = await fetchSheetData();
     stations = parseStations(data.table);
     if (!stations || stations.length === 0) {
-      statusEl.textContent = "לא נמצאו תחנות בגיליון";
+      showErrorState("לא נמצאו תחנות בגיליון");
       return;
     }
+    
+    // שמירה ב-cache להמשך
+    await saveToCache(data);
+    
     console.log(`נטענו ${stations.length} תחנות מהגיליון`);
+    showSuccessState();
   } catch (err) {
-    statusEl.textContent = `אירעה שגיאה בטעינת הנתונים: ${err.message}`;
+    showErrorState(`אירעה שגיאה בטעינת הנתונים: ${err.message}`);
     console.error("Error loading data:", err);
     return;
   }
@@ -702,6 +786,22 @@ async function init() {
       }
     }, CONFIG.GEOLOCATION_REFRESH_MS);
   }
+}
+
+// פונקציות עזר למצבי טעינה
+function showLoadingState() {
+  statusEl.innerHTML = '<div class="loading-spinner">טוען...</div>';
+}
+
+function showSuccessState() {
+  statusEl.textContent = "הנתונים נטענו בהצלחה";
+  setTimeout(() => {
+    statusEl.textContent = "";
+  }, 2000);
+}
+
+function showErrorState(message) {
+  statusEl.innerHTML = `<div class="error-message" role="alert">${message}</div>`;
 }
 
 // פונקציה נפרדת לבקשת מיקום שרצה במקביל
@@ -872,14 +972,28 @@ function applyFilters() {
   renderStations(list, userPosGlobal);
 }
 
-// חיפוש ידני
+// Debouncing function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// חיפוש ידני עם debouncing
 let controlsSetup = false;
 function setupControls() {
   if (controlsSetup) return; // מניעת הגדרה כפולה
   controlsSetup = true;
   
   if (searchInput) {
-    searchInput.addEventListener("input", applyFilters);
+    // Debounced search - רק אחרי 300ms של הפסקה בהקלדה
+    searchInput.addEventListener("input", debounce(applyFilters, 300));
   }
   if (distanceRange) {
     distanceRange.addEventListener("input", applyFilters);
