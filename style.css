@@ -14,20 +14,6 @@ header {
   text-align: center;
 }
 
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
 main {
   padding: 1rem;
   max-width: 800px;
@@ -113,11 +99,6 @@ body.high-contrast main {
   background: #000 !important;
   color: #fff !important;
   border: 2px solid #fff !important;
-}
-
-body.high-contrast .logo {
-  border: 2px solid #fff !important;
-  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.3) !important;
 }
 
 body.high-contrast .station {

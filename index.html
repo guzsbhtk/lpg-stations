@@ -18,6 +18,9 @@
 <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-192.png">
 
 <title>תחנות גפ"מ קרובות אלי</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
 <link rel="stylesheet" href="style.css" />
 <link rel="manifest" href="manifest.json" />
 <script>
@@ -215,26 +218,23 @@ display: none;
 </head>
 <body>
 <header>
-<div class="header-content">
-<img src="icons/icon-192.png" alt="לוגו תחנות גפ״מ" class="logo">
 <h1>תחנות גפ"מ קרובות אלי</h1>
-</div>
 </header>
 
 <!-- כפתור הוספה למסך הבית לאפל -->
-<button id="ios-add-to-home" class="ios-add-to-home" onclick="showAddToHomeInstructions()">
+<button id="ios-add-to-home" class="ios-add-to-home" onclick="showAddToHomeInstructions()" style="display: none !important;">
 <span class="icon">📱</span>
 הוסף למסך הבית
 </button>
 
 <!-- כפתור התקנה לאנדרואיד -->
-<button id="android-install" class="android-install" onclick="installAndroidApp()">
+<button id="android-install" class="android-install" onclick="installAndroidApp()" style="display: none !important;">
 <span class="icon">📲</span>
 התקן אפליקציה
 </button>
 
 <!-- כפתור התקנה PWA -->
-<button id="pwa-install" class="pwa-install" onclick="installPWA()">
+<button id="pwa-install" class="pwa-install" onclick="installPWA()" style="display: none !important;">
 <span class="icon">⚡</span>
 התקן אפליקציה
 </button>
