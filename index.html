@@ -1,302 +1,308 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://docs.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://docs.google.com; worker-src 'self' blob:; geolocation 'self';">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://docs.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: https://raw.githubusercontent.com; connect-src 'self' https://docs.google.com https://forms.google.com; worker-src 'self' blob:; geolocation 'self';">
+  
+  <!-- Meta tags לאפל -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="תחנות גפ״מ">
+  <meta name="format-detection" content="telephone=no">
+  
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-512.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-192.png">
+  
+  <title>תחנות גפ"מ קרובות אלי</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js").catch(console.error);
+    }
+  </script>
+  <style>
+    /* הגדרות נגישות */
+    .high-contrast {
+      background: #000 !important;
+      color: #fff !important;
+    }
+    
+    .high-contrast * {
+      background: #000 !important;
+      color: #fff !important;
+      border-color: #fff !important;
+    }
+    
+    .increased-spacing {
+      line-height: 1.8 !important;
+      letter-spacing: 0.05em !important;
+    }
+    
+    /* ניווט במקלדת - מיקוד נראה */
+    *:focus {
+      outline: 3px solid #2e7d32 !important;
+      outline-offset: 2px !important;
+    }
+    
 
-<!-- Meta tags לאפל -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="תחנות גפ״מ">
-<meta name="format-detection" content="telephone=no">
+    
+    /* הודעות שגיאה נגישות - עיצוב עדין */
+    .error-message {
+      color: #666 !important;
+      background: #f8f8f8 !important;
+      border: 1px solid #ddd !important;
+      padding: 10px !important;
+      margin: 10px 0 !important;
+      border-radius: 4px !important;
+      font-weight: normal !important;
+    }
 
-<!-- Apple Touch Icons -->
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-192.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-512.png">
-<link rel="apple-touch-icon" sizes="167x167" href="icons/icon-192.png">
+    /* כפתור הוספה למסך הבית לאפל */
+    .ios-add-to-home {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #007AFF;
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
 
-<title>תחנות גפ"מ קרובות אלי</title>
-<link rel="stylesheet" href="style.css" />
-<link rel="manifest" href="manifest.json" />
-<script>
-if ("serviceWorker" in navigator) {
-navigator.serviceWorker.register("service-worker.js").catch(console.error);
-}
-</script>
-<style>
-/* הגדרות נגישות */
-.high-contrast {
-background: #000 !important;
-color: #fff !important;
-}
+    .ios-add-to-home:hover {
+      background: #0056CC;
+      transform: translateY(-1px);
+    }
 
-.high-contrast * {
-background: #000 !important;
-color: #fff !important;
-border-color: #fff !important;
-}
+    .ios-add-to-home:active {
+      transform: translateY(0);
+    }
 
-.increased-spacing {
-line-height: 1.8 !important;
-letter-spacing: 0.05em !important;
-}
+    .ios-add-to-home .icon {
+      font-size: 16px;
+    }
 
-/* ניווט במקלדת - מיקוד נראה */
-*:focus {
-outline: 3px solid #2e7d32 !important;
-outline-offset: 2px !important;
-}
+    /* כפתור התקנה לאנדרואיד */
+    .android-install {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background: #018786;
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
 
+    .android-install:hover {
+      background: #01695C;
+      transform: translateY(-1px);
+    }
 
+    .android-install:active {
+      transform: translateY(0);
+    }
 
-/* הודעות שגיאה נגישות - עיצוב עדין */
-.error-message {
-color: #666 !important;
-background: #f8f8f8 !important;
-border: 1px solid #ddd !important;
-padding: 10px !important;
-margin: 10px 0 !important;
-border-radius: 4px !important;
-font-weight: normal !important;
-}
+    .android-install .icon {
+      font-size: 16px;
+    }
 
-/* כפתור הוספה למסך הבית לאפל */
-.ios-add-to-home {
-position: fixed;
-top: 20px;
-right: 20px;
-background: #007AFF;
-color: white;
-border: none;
-padding: 12px 16px;
-border-radius: 8px;
-cursor: pointer;
-font-size: 14px;
-font-weight: 500;
-z-index: 1000;
-box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-display: none;
-align-items: center;
-gap: 8px;
-transition: all 0.3s ease;
-}
+    /* כפתור התקנה PWA */
+    .pwa-install {
+      position: fixed;
+      top: 120px; /* Adjust position to be below android-install */
+      right: 20px;
+      background: #4CAF50; /* A green color for PWA */
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
 
-.ios-add-to-home:hover {
-background: #0056CC;
-transform: translateY(-1px);
-}
+    .pwa-install:hover {
+      background: #388E3C; /* Darker green on hover */
+      transform: translateY(-1px);
+    }
 
-.ios-add-to-home:active {
-transform: translateY(0);
-}
+    .pwa-install:active {
+      transform: translateY(0);
+    }
 
-.ios-add-to-home .icon {
-font-size: 16px;
-}
+    .pwa-install .icon {
+      font-size: 16px;
+    }
 
-/* כפתור התקנה לאנדרואיד */
-.android-install {
-position: fixed;
-top: 70px;
-right: 20px;
-background: #018786;
-color: white;
-border: none;
-padding: 12px 16px;
-border-radius: 8px;
-cursor: pointer;
-font-size: 14px;
-font-weight: 500;
-z-index: 1000;
-box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-display: none;
-align-items: center;
-gap: 8px;
-transition: all 0.3s ease;
-}
+    /* הודעת הוספה למסך הבית */
+    .add-to-home-instructions {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      z-index: 2000;
+      max-width: 300px;
+      text-align: center;
+      display: none;
+    }
 
-.android-install:hover {
-background: #01695C;
-transform: translateY(-1px);
-}
+    .add-to-home-instructions h3 {
+      margin: 0 0 15px 0;
+      color: #333;
+    }
 
-.android-install:active {
-transform: translateY(0);
-}
+    .add-to-home-instructions p {
+      margin: 0 0 15px 0;
+      color: #666;
+      line-height: 1.5;
+    }
 
-.android-install .icon {
-font-size: 16px;
-}
+    .add-to-home-instructions button {
+      background: #007AFF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
 
-/* כפתור התקנה PWA */
-.pwa-install {
-position: fixed;
-top: 120px; /* Adjust position to be below android-install */
-right: 20px;
-background: #4CAF50; /* A green color for PWA */
-color: white;
-border: none;
-padding: 12px 16px;
-border-radius: 8px;
-cursor: pointer;
-font-size: 14px;
-font-weight: 500;
-z-index: 1000;
-box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-display: none;
-align-items: center;
-gap: 8px;
-transition: all 0.3s ease;
-}
-
-.pwa-install:hover {
-background: #388E3C; /* Darker green on hover */
-transform: translateY(-1px);
-}
-
-.pwa-install:active {
-transform: translateY(0);
-}
-
-.pwa-install .icon {
-font-size: 16px;
-}
-
-/* הודעת הוספה למסך הבית */
-.add-to-home-instructions {
-position: fixed;
-top: 50%;
-left: 50%;
-transform: translate(-50%, -50%);
-background: white;
-padding: 20px;
-border-radius: 12px;
-box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-z-index: 2000;
-max-width: 300px;
-text-align: center;
-display: none;
-}
-
-.add-to-home-instructions h3 {
-margin: 0 0 15px 0;
-color: #333;
-}
-
-.add-to-home-instructions p {
-margin: 0 0 15px 0;
-color: #666;
-line-height: 1.5;
-}
-
-.add-to-home-instructions button {
-background: #007AFF;
-color: white;
-border: none;
-padding: 10px 20px;
-border-radius: 6px;
-cursor: pointer;
-font-size: 14px;
-}
-
-.overlay {
-position: fixed;
-top: 0;
-left: 0;
-right: 0;
-bottom: 0;
-background: rgba(0,0,0,0.5);
-z-index: 1999;
-display: none;
-}
-</style>
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1999;
+      display: none;
+    }
+  </style>
 </head>
 <body>
-<header>
-<h1>תחנות גפ"מ קרובות אלי</h1>
-</header>
+  <header>
+    <h1>תחנות גפ"מ קרובות אלי</h1>
+  </header>
 
-<!-- כפתור הוספה למסך הבית לאפל -->
-<button id="ios-add-to-home" class="ios-add-to-home" onclick="showAddToHomeInstructions()">
-<span class="icon">📱</span>
-הוסף למסך הבית
-</button>
+  <!-- כפתור הוספה למסך הבית לאפל -->
+  <button id="ios-add-to-home" class="ios-add-to-home" onclick="showAddToHomeInstructions()">
+    <span class="icon">📱</span>
+    הוסף למסך הבית
+  </button>
 
-<!-- כפתור התקנה לאנדרואיד -->
-<button id="android-install" class="android-install" onclick="installAndroidApp()">
-<span class="icon">📲</span>
-התקן אפליקציה
-</button>
+  <!-- כפתור התקנה לאנדרואיד -->
+  <button id="android-install" class="android-install" onclick="installAndroidApp()">
+    <span class="icon">📲</span>
+    התקן אפליקציה
+  </button>
 
-<!-- כפתור התקנה PWA -->
-<button id="pwa-install" class="pwa-install" onclick="installPWA()">
-<span class="icon">⚡</span>
-התקן אפליקציה
-</button>
+  <!-- כפתור התקנה PWA -->
+  <button id="pwa-install" class="pwa-install" onclick="installPWA()">
+    <span class="icon">⚡</span>
+    התקן אפליקציה
+  </button>
 
-<!-- הודעת הוראות הוספה למסך הבית -->
-<div class="overlay" id="overlay"></div>
-<div class="add-to-home-instructions" id="add-to-home-instructions">
-<h3>הוסף למסך הבית</h3>
-<p>1. לחץ על כפתור השיתוף 
-<img src="https://raw.githubusercontent.com/guzsbhtk/lpg-stations/refs/heads/main/icons/share.jpeg" 
-alt="כפתור שיתוף" 
-style="display: inline-block; vertical-align: middle; margin: 0 4px; width: 24px; height: 24px; border-radius: 4px;">
-</p>
-<p>2. בחר "הוסף למסך הבית" או "Add to Home Screen"</p>
-<p>3. לחץ על "הוסף" או "Add"</p>
-<button onclick="hideAddToHomeInstructions()">הבנתי</button>
-</div>
+  <!-- הודעת הוראות הוספה למסך הבית -->
+  <div class="overlay" id="overlay"></div>
+  <div class="add-to-home-instructions" id="add-to-home-instructions">
+    <h3>הוסף למסך הבית</h3>
+    <p>1. לחץ על כפתור השיתוף 
+      <img src="https://raw.githubusercontent.com/guzsbhtk/lpg-stations/refs/heads/main/icons/share.jpeg" 
+           alt="כפתור שיתוף" 
+           style="display: inline-block; vertical-align: middle; margin: 0 4px; width: 24px; height: 24px; border-radius: 4px;">
+    </p>
+    <p>2. בחר "הוסף למסך הבית" או "Add to Home Screen"</p>
+    <p>3. לחץ על "הוסף" או "Add"</p>
+    <button onclick="hideAddToHomeInstructions()">הבנתי</button>
+  </div>
 
-<div id="search-container">
-<input type="text" id="search" placeholder="חפש תחנה או עיר…" 
-aria-label="חיפוש תחנות גפ״מ לפי שם או עיר" />
-</div>
-<div id="controls">
-<label for="distanceRange">מרחק מקסימלי: <span id="distanceValue">50</span> ק"מ</label>
-<input type="range" id="distanceRange" min="1" max="100" value="50" 
-aria-label="מרחק מקסימלי בקילומטרים" 
-aria-describedby="distanceValue" />
-<select id="sortBy" aria-label="סדר מיון תחנות">
-<option value="distance">מיון לפי מרחק</option>
-<option value="price">מיון לפי מחיר</option>
-</select>
-</div>
+  <div id="search-container">
+    <input type="text" id="search" placeholder="חפש תחנה או עיר…" 
+           aria-label="חיפוש תחנות גפ״מ לפי שם או עיר" />
+  </div>
+  <div id="controls">
+    <label for="distanceRange">מרחק מקסימלי: <span id="distanceValue">50</span> ק"מ</label>
+    <input type="range" id="distanceRange" min="1" max="100" value="50" 
+           aria-label="מרחק מקסימלי בקילומטרים" 
+           aria-describedby="distanceValue" />
+    <select id="sortBy" aria-label="סדר מיון תחנות">
+      <option value="distance">מיון לפי מרחק</option>
+      <option value="price">מיון לפי מחיר</option>
+    </select>
+  </div>
 
-<main>
-<section id="status" role="status" aria-live="polite">טוען נתונים…</section>
-<section id="stations" role="main" aria-label="רשימת תחנות גפ״מ"></section>
-</main>
+  <main>
+    <section id="status" role="status" aria-live="polite">טוען נתונים…</section>
+    <section id="stations" role="main" aria-label="רשימת תחנות גפ״מ"></section>
+    
+    <!-- הודעת מצב offline -->
+    <div id="offline-message" style="display: none; background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 15px; border-radius: 8px; margin: 10px 0; text-align: center;">
+      <strong>מצב Offline:</strong> האפליקציה פועלת ללא חיבור לאינטרנט. חלק מהפונקציות עשויות להיות מוגבלות.
+    </div>
+  </main>
 
-<!-- כפתור נגישות פשוט -->
-<button id="accessibility-btn" onclick="toggleAccessibilityMenu()" style="
-   position: fixed;
-   bottom: 20px;
-   left: 20px;
-   background: #2e7d32;
-   color: white;
-   border: none;
-   padding: 8px;
-   border-radius: 50%;
-   cursor: pointer;
-   font-size: 18px;
-   z-index: 1000;
-   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-   width: 40px;
-   height: 40px;
-   display: flex;
-   align-items: center;
-   justify-content: center;
- " title="הגדרות נגישות">♿</button>
+  <!-- כפתור נגישות פשוט -->
+  <button id="accessibility-btn" onclick="toggleAccessibilityMenu()" style="
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #2e7d32;
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  " title="הגדרות נגישות">♿</button>
 
-<footer style="text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid #ddd; background: #f9f9f9;">
-<a href="privacy-policy.html" style="margin: 0 10px; color: #2e7d32; text-decoration: none;">מדיניות פרטיות</a>
-<span style="color: #666;">|</span>
-<a href="terms-of-use.html" style="margin: 0 10px; color: #2e7d32; text-decoration: none;">תנאי שימוש, מידע ונגישות</a>
-</footer>
+  <footer style="text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid #ddd; background: #f9f9f9;">
+    <a href="privacy-policy.html" style="margin: 0 10px; color: #2e7d32; text-decoration: none;">מדיניות פרטיות</a>
+    <span style="color: #666;">|</span>
+    <a href="terms-of-use.html" style="margin: 0 10px; color: #2e7d32; text-decoration: none;">תנאי שימוש, מידע ונגישות</a>
+  </footer>
 
-<script src="script.js"></script>
-<script src="accessibility.js"></script>
+  <script src="script.js"></script>
+  <script src="accessibility.js"></script>
 </body>
+</html> 
