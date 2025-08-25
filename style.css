@@ -58,25 +58,7 @@ main {
   background: #fff;
 }
 
-#refresh-btn {
-  background: #2e7d32;
-  color: white;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.3s ease;
-}
 
-#refresh-btn:hover {
-  background: #1b5e20;
-}
-
-#refresh-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
 
 #search {
   width: 100%;
