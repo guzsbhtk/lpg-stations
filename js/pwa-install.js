@@ -14,6 +14,16 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 function showPWAInstallButton() {
+  // באנדרואיד עם שירותי גוגל: אל תציג כפתור PWA, ניתן עדיפות להורדה מהחנות
+  if (isAndroid() && hasGooglePlayServices()) {
+    const pwaInstallButton = document.getElementById('pwa-install');
+    if (pwaInstallButton) {
+      pwaInstallButton.style.display = 'none';
+    }
+    console.log('🚫 PWA Install Button hidden on Android with Google Play Services (preferring native app download)');
+    return;
+  }
+
   // בדיקה מוקדמת - אם האפליקציה מותקנת, אל תציג שום כפתור
   if (isStandalone()) {
     console.log('🚫 PWA Install Button - App already installed, skipping');
@@ -146,7 +156,7 @@ function showAndroidInstallButton() {
   });
   
   // קדימות לחנות: אם אפשר להציג כפתור חנות - הסתר את כפתור ה-PWA
-  const shouldShow = androidInstallButton && isMobile() && isAndroid() && !isAndroidAppInstalled() && !isStandalone();
+  const shouldShow = androidInstallButton && isMobile() && isAndroid() && hasGooglePlayServices() && !isAndroidAppInstalled() && !isStandalone();
 
   if (shouldShow) {
     showInstallButton('android-install');

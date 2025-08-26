@@ -41,13 +41,13 @@ async function init() {
     showIOSAddToHomeButton();
     showAndroidInstallButton(); // הוספת כפתור לאנדרואיד
     
-    // בדיקה נוספת לכפתור PWA - וודא שהוא לא מופיע אם האפליקציה מותקנת
+    // בדיקה נוספת לכפתור PWA - וודא שהוא לא מופיע אם האפליקציה מותקנת או באנדרואיד עם שירותי גוגל
     const pwaInstallButton = document.getElementById('pwa-install');
     if (pwaInstallButton) {
-      // הסתר את הכפתור אם זה לא מכשיר נייד או אם האפליקציה מותקנת
-      if (!isMobile() || isStandalone()) {
+      // הסתר את הכפתור אם זה לא מכשיר נייד, אם האפליקציה מותקנת, או באנדרואיד עם שירותי גוגל
+      if (!isMobile() || isStandalone() || (isAndroid() && hasGooglePlayServices())) {
         pwaInstallButton.style.display = 'none';
-        console.log('🚫 PWA Install Button hidden - not mobile or app already installed');
+        console.log('🚫 PWA Install Button hidden - not mobile, app already installed, or Android with Google Play Services');
       }
     }
   } else {

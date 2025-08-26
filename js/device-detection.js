@@ -87,3 +87,27 @@ function isStandalone() {
          window.matchMedia('(display-mode: standalone)').matches ||
          window.matchMedia('(display-mode: window-controls-overlay)').matches;
 }
+
+function hasGooglePlayServices() {
+  // בדיקה אם יש שירותי גוגל פליי
+  const userAgent = navigator.userAgent;
+  
+  // בדיקה אם זה Chrome או דפדפן עם שירותי גוגל
+  const hasChrome = userAgent.includes('Chrome') && !userAgent.includes('Edg') && !userAgent.includes('OPR');
+  const hasGoogleServices = userAgent.includes('Google') || userAgent.includes('GSA') || userAgent.includes('com.google');
+  
+  // בדיקה אם יש תכונות של שירותי גוגל
+  const hasGoogleFeatures = 'google' in window || 'gapi' in window || 'googleAds' in window;
+  
+  const result = hasChrome || hasGoogleServices || hasGoogleFeatures;
+  
+  console.log('Google Play Services Detection:', {
+    userAgent,
+    hasChrome,
+    hasGoogleServices,
+    hasGoogleFeatures,
+    result
+  });
+  
+  return result;
+}
