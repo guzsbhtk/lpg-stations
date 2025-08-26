@@ -115,7 +115,7 @@ function showIOSAddToHomeButton() {
   const shouldShow = addToHomeButton && isMobile() && isIOS() && !isStandalone();
   
   if (shouldShow) {
-    showInstallButton('ios-add-to-home');
+    showInstallButton('#ios-add-to-home');
     console.log('✅ iOS Button should be visible now');
     
     // בדיקה נוספת - וודא שהכפתור באמת נראה
@@ -150,6 +150,7 @@ function showAndroidInstallButton() {
   logInstallDebug('Android Install', {
     'isMobile()': isMobile(),
     'isAndroid()': isAndroid(),
+    'hasGooglePlayServices()': hasGooglePlayServices(),
     'isAndroidAppInstalled()': isAndroidAppInstalled(),
     'isStandalone()': isStandalone(),
     'Android button found': !!androidInstallButton
@@ -159,13 +160,14 @@ function showAndroidInstallButton() {
   const shouldShow = androidInstallButton && isMobile() && isAndroid() && hasGooglePlayServices() && !isAndroidAppInstalled() && !isStandalone();
 
   if (shouldShow) {
-    showInstallButton('android-install');
+    showInstallButton('#android-install');
     console.log('✅ Android Install Button should be visible now');
   } else {
     logInstallFailure([
       { condition: !androidInstallButton, message: 'Button element not found' },
       { condition: !isMobile(), message: 'Not mobile device' },
       { condition: !isAndroid(), message: 'Not Android device' },
+      { condition: !hasGooglePlayServices(), message: 'No Google Play Services' },
       { condition: isAndroidAppInstalled(), message: 'Android app already installed' },
       { condition: isStandalone(), message: 'Already in app mode' }
     ]);

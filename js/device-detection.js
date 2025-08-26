@@ -89,23 +89,30 @@ function isStandalone() {
 }
 
 function hasGooglePlayServices() {
-  // בדיקה אם יש שירותי גוגל פליי
+  // בדיקה פשוטה - אם זה אנדרואיד ולא אפליקציה מותקנת, נניח שיש שירותי גוגל
   const userAgent = navigator.userAgent;
   
-  // בדיקה אם זה Chrome או דפדפן עם שירותי גוגל
-  const hasChrome = userAgent.includes('Chrome') && !userAgent.includes('Edg') && !userAgent.includes('OPR');
-  const hasGoogleServices = userAgent.includes('Google') || userAgent.includes('GSA') || userAgent.includes('com.google');
+  // אם זה לא אנדרואיד, אין שירותי גוגל
+  if (!isAndroid()) {
+    return false;
+  }
   
-  // בדיקה אם יש תכונות של שירותי גוגל
-  const hasGoogleFeatures = 'google' in window || 'gapi' in window || 'googleAds' in window;
+  // אם זה אפליקציה מותקנת (TWA/WebView), אין צורך בכפתור חנות
+  if (isAndroidAppInstalled()) {
+    return false;
+  }
   
-  const result = hasChrome || hasGoogleServices || hasGoogleFeatures;
+  // בדיקה אם זה דפדפן רגיל (לא WebView מיוחד)
+  const isRegularBrowser = !userAgent.includes('wv') && 
+                          (userAgent.includes('Chrome') || userAgent.includes('Firefox') || userAgent.includes('Samsung'));
+  
+  const result = isRegularBrowser;
   
   console.log('Google Play Services Detection:', {
     userAgent,
-    hasChrome,
-    hasGoogleServices,
-    hasGoogleFeatures,
+    isAndroid: isAndroid(),
+    isAndroidAppInstalled: isAndroidAppInstalled(),
+    isRegularBrowser,
     result
   });
   
