@@ -23,6 +23,9 @@
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
 <link rel="stylesheet" href="style.css" />
 <link rel="manifest" href="manifest.json" />
+<!-- Plausible Analytics -->
+<script defer data-domain="yourdomain.com" src="https://plausible.io/js/script.js"></script>
+
 <script>
 if ("serviceWorker" in navigator) {
 navigator.serviceWorker.register("service-worker.js").catch(console.error);
