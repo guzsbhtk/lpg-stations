@@ -130,13 +130,35 @@ function applyFilters() {
 
   // מיון
   const sortBy = sortSelect.value;
-  if (sortBy === "relevance" && term) {
-    // מיון לפי דיוק החיפוש (כבר ממוין מהחיפוש)
-    // לא צריך לעשות כלום כי כבר ממוין
-  } else if (sortBy === "price") {
-    list = list.slice().sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-  } else if (sortBy === "distance" && userPosGlobal) {
-    list = list.slice().sort((a, b) => a.distance - b.distance);
+  
+  if (term) {
+    // כשיש חיפוש פעיל - מיון לפי דיוק החיפוש (כבר ממוין מהחיפוש)
+    // ומיון משני לפי בחירת המשתמש במקרה של דיוק זהה
+    if (sortBy === "price") {
+      // מיון משני לפי מחיר עבור תחנות עם אותו ציון דיוק
+      list = list.slice().sort((a, b) => {
+        if (a.searchScore !== b.searchScore) {
+          return b.searchScore - a.searchScore; // דיוק גבוה יותר קודם
+        }
+        return parseFloat(a.price) - parseFloat(b.price); // מחיר נמוך יותר קודם
+      });
+    } else if (sortBy === "distance" && userPosGlobal) {
+      // מיון משני לפי מרחק עבור תחנות עם אותו ציון דיוק
+      list = list.slice().sort((a, b) => {
+        if (a.searchScore !== b.searchScore) {
+          return b.searchScore - a.searchScore; // דיוק גבוה יותר קודם
+        }
+        return a.distance - b.distance; // מרחק קטן יותר קודם
+      });
+    }
+    // אם לא - הרשימה כבר ממוינת לפי דיוק החיפוש
+  } else {
+    // כשאין חיפוש פעיל - מיון רגיל לפי בחירת המשתמש
+    if (sortBy === "price") {
+      list = list.slice().sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+    } else if (sortBy === "distance" && userPosGlobal) {
+      list = list.slice().sort((a, b) => a.distance - b.distance);
+    }
   }
 
   // הצגת הודעה אם אין תוצאות
