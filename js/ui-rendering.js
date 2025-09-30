@@ -169,33 +169,37 @@ function updateDistanceControlsState(term, distanceRange, distanceValue) {
   const searchNotice = document.getElementById('search-notice');
   
   if (term) {
-    // יש חיפוש פעיל - נשבית את הסליידר ונציג הודעה
+    // יש חיפוש פעיל - נסמן את הסליידר כמושבת (אבל לא באמת disabled כדי שאירועים יעבדו)
     if (distanceRange) {
-      distanceRange.disabled = true;
+      distanceRange.setAttribute('data-search-active', 'true');
       distanceRange.style.opacity = '0.5';
-      distanceRange.style.cursor = 'not-allowed';
+      distanceRange.style.cursor = 'pointer'; // לשנות ל-pointer כדי לאותת שאפשר ללחוץ
+      distanceRange.style.pointerEvents = 'auto';
     }
     if (distanceLabel) {
       distanceLabel.style.opacity = '0.5';
+      distanceLabel.style.cursor = 'pointer';
     }
     if (distanceValue) {
       distanceValue.style.opacity = '0.5';
     }
     
-    // הצגת הודעה
+    // הצגת הודעה עם הסבר שלוחצים כדי לבטל
     if (searchNotice) {
       searchNotice.style.display = 'block';
-      searchNotice.textContent = '🔍 מחפש תחנות בכל הארץ';
+      searchNotice.innerHTML = '🔍 מחפש תחנות בכל הארץ<br><small style="font-size: 0.85rem; opacity: 0.8;">לחץ על הסליידר לחזרה לסינון לפי מרחק</small>';
     }
   } else {
     // אין חיפוש - נאפשר את הסליידר
     if (distanceRange) {
-      distanceRange.disabled = false;
+      distanceRange.removeAttribute('data-search-active');
       distanceRange.style.opacity = '1';
       distanceRange.style.cursor = 'pointer';
+      distanceRange.style.pointerEvents = 'auto';
     }
     if (distanceLabel) {
       distanceLabel.style.opacity = '1';
+      distanceLabel.style.cursor = 'default';
     }
     if (distanceValue) {
       distanceValue.style.opacity = '1';
@@ -222,12 +226,23 @@ function setupControls() {
     searchInput.addEventListener("input", debounce(applyFilters, CONFIG.UI_DEBUG_DELAY + 50));
   }
   if (distanceRange) {
-    // כשמנסים לשנות את הסליידר בזמן חיפוש - מחיקת החיפוש
-    distanceRange.addEventListener("mousedown", function() {
+    // כשמנסים לשנות את הסליידר בזמן חיפוש - מחיקת החיפוש ומניעת השינוי
+    distanceRange.addEventListener("mousedown", function(e) {
       if (searchInput && searchInput.value.trim()) {
+        e.preventDefault(); // מונע את השינוי בסליידר
         searchInput.value = '';
         // עדכון מיידי של התצוגה
         applyFilters();
+      }
+    });
+    
+    distanceRange.addEventListener("click", function(e) {
+      if (distanceRange.getAttribute('data-search-active') === 'true') {
+        e.preventDefault(); // מונע את השינוי בסליידר
+        if (searchInput && searchInput.value.trim()) {
+          searchInput.value = '';
+          applyFilters();
+        }
       }
     });
     
@@ -235,13 +250,21 @@ function setupControls() {
     distanceRange.addEventListener("keydown", function(e) {
       if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') && 
           searchInput && searchInput.value.trim()) {
+        e.preventDefault(); // מונע את השינוי בסליידר
         searchInput.value = '';
         // עדכון מיידי של התצוגה
         applyFilters();
       }
     });
     
-    distanceRange.addEventListener("input", debounce(applyFilters, CONFIG.UI_DEBUG_DELAY));
+    distanceRange.addEventListener("input", function(e) {
+      // אם יש חיפוש פעיל - לא לאפשר שינוי
+      if (distanceRange.getAttribute('data-search-active') === 'true') {
+        e.preventDefault();
+        return;
+      }
+      debounce(applyFilters, CONFIG.UI_DEBUG_DELAY)();
+    });
   }
   if (sortSelect) {
     sortSelect.addEventListener("change", applyFilters);

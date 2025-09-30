@@ -48,12 +48,12 @@ main {
 
 #distanceRange {
   width: 200px;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, cursor 0.3s ease;
 }
 
-#distanceRange:disabled {
+#distanceRange[data-search-active="true"] {
   opacity: 0.5;
-  cursor: not-allowed;
+  cursor: pointer;
 }
 
 #sortBy {
@@ -254,6 +254,6 @@ body.high-contrast #search-notice {
   border-color: #0f0 !important;
 }
 
-body.high-contrast #distanceRange:disabled {
+body.high-contrast #distanceRange[data-search-active="true"] {
   opacity: 0.3 !important;
 }
