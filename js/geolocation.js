@@ -108,14 +108,8 @@ function requestGeolocation(stations) {
           const statusEl = appState.getElement('status');
           if (statusEl) statusEl.textContent = "";
           
-          // עדכון התצוגה עם מרחקים אם אין חיפוש פעיל
-          const searchInput = appState.getElement('searchInput');
-          if (!searchInput.value.trim()) {
-            renderStations(stations.slice(0, CONFIG.MAX_STATIONS_DISPLAY), userPos);
-          } else {
-            // אם יש חיפוש פעיל, הרץ אותו מחדש עם המרחקים החדשים
-            applyFilters();
-          }
+          // עדכון התצוגה עם סינון לפי מרחק מקסימלי
+          applyFilters();
         },
         (err) => {
           console.warn(`❌ Geolocation attempt ${attemptCount} failed:`, {
