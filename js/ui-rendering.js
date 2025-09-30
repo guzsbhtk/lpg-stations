@@ -184,10 +184,10 @@ function updateDistanceControlsState(term, distanceRange, distanceValue) {
       distanceValue.style.opacity = '0.5';
     }
     
-    // הצגת הודעה עם הסבר שלוחצים כדי לבטל
+    // הצגת הודעה
     if (searchNotice) {
       searchNotice.style.display = 'block';
-      searchNotice.innerHTML = '🔍 מחפש תחנות בכל הארץ<br><small style="font-size: 0.85rem; opacity: 0.8;">לחץ על הסליידר לחזרה לסינון לפי מרחק</small>';
+      searchNotice.textContent = '🔍 מחפש תחנות בכל הארץ';
     }
   } else {
     // אין חיפוש - נאפשר את הסליידר
