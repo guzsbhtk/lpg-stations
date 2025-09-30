@@ -1,6 +1,47 @@
 // ניהול התקנת PWA
 let deferredPrompt;
 
+// בדיקה אם האפליקציה מותקנת (גם אם נכנסים דרך הדפדפן)
+async function isAppInstalled() {
+  // 1. בדיקה אם רצים ב-standalone mode
+  if (isStandalone()) {
+    console.log('✅ App installed - running in standalone mode');
+    return true;
+  }
+  
+  // 2. בדיקה אם המשתמש כבר התקין בעבר (localStorage)
+  try {
+    const installedFlag = localStorage.getItem('app-installed');
+    if (installedFlag === 'true') {
+      console.log('✅ App installed - localStorage flag');
+      return true;
+    }
+  } catch (e) {
+    console.log('localStorage check failed:', e);
+  }
+  
+  // 3. שימוש ב-getInstalledRelatedApps API (Chrome Android)
+  if ('getInstalledRelatedApps' in navigator) {
+    try {
+      const relatedApps = await navigator.getInstalledRelatedApps();
+      console.log('📱 Related apps check:', relatedApps);
+      if (relatedApps && relatedApps.length > 0) {
+        // שמירה ב-localStorage למהירות בפעמים הבאות
+        try {
+          localStorage.setItem('app-installed', 'true');
+        } catch (e) {}
+        console.log('✅ App installed - found via getInstalledRelatedApps');
+        return true;
+      }
+    } catch (error) {
+      console.log('getInstalledRelatedApps check failed:', error);
+    }
+  }
+  
+  console.log('❌ App not installed');
+  return false;
+}
+
 // תפיסת beforeinstallprompt event
 window.addEventListener('beforeinstallprompt', (e) => {
   console.log('PWA Install prompt available');
@@ -13,7 +54,27 @@ window.addEventListener('beforeinstallprompt', (e) => {
   showPWAInstallButton();
 });
 
-function showPWAInstallButton() {
+// כאשר האפליקציה מותקנת בהצלחה
+window.addEventListener('appinstalled', (e) => {
+  console.log('✅ PWA installed successfully');
+  // שמירה ב-localStorage שהאפליקציה מותקנת
+  try {
+    localStorage.setItem('app-installed', 'true');
+  } catch (e) {
+    console.log('Failed to save install flag:', e);
+  }
+  // הסתרת כפתורי ההתקנה
+  hideInstallButtons();
+});
+
+async function showPWAInstallButton() {
+  // בדיקה מוקדמת - אם האפליקציה מותקנת, אל תציג שום כפתור
+  const appInstalled = await isAppInstalled();
+  if (appInstalled) {
+    console.log('🚫 PWA Install Button - App already installed, skipping');
+    return;
+  }
+  
   // באנדרואיד עם שירותי גוגל: אל תציג כפתור PWA, ניתן עדיפות להורדה מהחנות
   if (isAndroid() && hasGooglePlayServices()) {
     const pwaInstallButton = document.getElementById('pwa-install');
@@ -21,12 +82,6 @@ function showPWAInstallButton() {
       pwaInstallButton.style.display = 'none';
     }
     console.log('🚫 PWA Install Button hidden on Android with Google Play Services (preferring native app download)');
-    return;
-  }
-
-  // בדיקה מוקדמת - אם האפליקציה מותקנת, אל תציג שום כפתור
-  if (isStandalone()) {
-    console.log('🚫 PWA Install Button - App already installed, skipping');
     return;
   }
   
@@ -74,6 +129,12 @@ function installPWA() {
     deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
         console.log('PWA installed successfully');
+        // שמירה ב-localStorage שהמשתמש התקין
+        try {
+          localStorage.setItem('app-installed', 'true');
+        } catch (e) {
+          console.log('Failed to save install flag:', e);
+        }
       } else {
         console.log('PWA installation declined');
       }
@@ -82,9 +143,10 @@ function installPWA() {
   }
 }
 
-function showIOSAddToHomeButton() {
+async function showIOSAddToHomeButton() {
   // בדיקה מוקדמת - אם האפליקציה מותקנת, אל תציג שום כפתור
-  if (isStandalone()) {
+  const appInstalled = await isAppInstalled();
+  if (appInstalled) {
     console.log('🚫 iOS Add to Home Button - App already installed, skipping');
     return;
   }
@@ -137,9 +199,10 @@ function showIOSAddToHomeButton() {
   }
 }
 
-function showAndroidInstallButton() {
+async function showAndroidInstallButton() {
   // בדיקה מוקדמת - אם האפליקציה מותקנת, אל תציג שום כפתור
-  if (isStandalone()) {
+  const appInstalled = await isAppInstalled();
+  if (appInstalled) {
     console.log('🚫 Android Install Button - App already installed, skipping');
     return;
   }
@@ -176,12 +239,25 @@ function showAndroidInstallButton() {
 
 function installAndroidApp() {
   console.log('Opening Play Store:', CONFIG.URLS.PLAY_STORE);
+  // שמירה שהמשתמש לחץ להתקין (ככל הנראה יתקין)
+  try {
+    localStorage.setItem('app-install-clicked', 'true');
+  } catch (e) {
+    console.log('Failed to save install click flag:', e);
+  }
   window.open(CONFIG.URLS.PLAY_STORE, '_blank');
 }
 
 function showAddToHomeInstructions() {
   const overlay = document.querySelector(CONFIG.SELECTORS.OVERLAY);
   const instructions = document.querySelector(CONFIG.SELECTORS.INSTRUCTIONS);
+  
+  // שמירה שהמשתמש ראה את ההוראות (ככל הנראה יתקין)
+  try {
+    localStorage.setItem('app-install-clicked', 'true');
+  } catch (e) {
+    console.log('Failed to save install click flag:', e);
+  }
   
   if (overlay && instructions) {
     overlay.style.display = 'block';
@@ -205,10 +281,34 @@ window.hideAddToHomeInstructions = hideAddToHomeInstructions;
 window.installAndroidApp = installAndroidApp;
 window.installPWA = installPWA;
 
+// בדיקה אוטומטית בטעינת הדף - זיהוי משתמשים שהתקינו בעבר
+async function checkAndSaveAppInstalled() {
+  try {
+    // אם כבר יש דגל שמור - לא צריך לבדוק שוב
+    const existingFlag = localStorage.getItem('app-installed');
+    if (existingFlag === 'true') {
+      console.log('✅ App install flag already exists');
+      return;
+    }
+    
+    // בדיקה אם האפליקציה מותקנת
+    const installed = await isAppInstalled();
+    if (installed) {
+      console.log('🔍 Detected previously installed app - saving flag');
+      localStorage.setItem('app-installed', 'true');
+    }
+  } catch (e) {
+    console.log('Failed to check app installation status:', e);
+  }
+}
+
 // הוספת event listener לסגירת ההודעות בלחיצה על הרקע
 document.addEventListener('DOMContentLoaded', function() {
   const overlay = document.querySelector(CONFIG.SELECTORS.OVERLAY);
   if (overlay) {
     overlay.addEventListener('click', hideAddToHomeInstructions);
   }
+  
+  // בדיקה אוטומטית אם האפליקציה מותקנת
+  checkAndSaveAppInstalled();
 });

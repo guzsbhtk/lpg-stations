@@ -32,5 +32,12 @@
       "type": "image/png",
       "form_factor": "wide"
     }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "id": "io.github.guzsbhtk.twa",
+      "url": "https://play.google.com/store/apps/details?id=io.github.guzsbhtk.twa"
+    }
   ]
 } 
