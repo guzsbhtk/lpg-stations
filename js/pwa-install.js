@@ -144,6 +144,17 @@ function installPWA() {
 }
 
 async function showIOSAddToHomeButton() {
+  // בדיקה אם המשתמש ביקש להסתיר את הכפתור לצמיתות
+  try {
+    const hideIOSButton = localStorage.getItem('hide-ios-button');
+    if (hideIOSButton === 'true') {
+      console.log('🚫 iOS Add to Home Button - User requested to hide permanently');
+      return;
+    }
+  } catch (e) {
+    console.log('Failed to check hide-ios-button flag:', e);
+  }
+  
   // בדיקה מוקדמת - אם האפליקציה מותקנת, אל תציג שום כפתור
   const appInstalled = await isAppInstalled();
   if (appInstalled) {
@@ -275,9 +286,32 @@ function hideAddToHomeInstructions() {
   }
 }
 
+function hideIOSButtonPermanently() {
+  console.log('🚫 User requested to hide iOS button permanently');
+  
+  // שמירה ב-localStorage שהמשתמש לא רוצה לראות את הכפתור
+  try {
+    localStorage.setItem('hide-ios-button', 'true');
+    console.log('✅ Hide flag saved');
+  } catch (e) {
+    console.log('Failed to save hide-ios-button flag:', e);
+  }
+  
+  // סגירת חלון ההוראות
+  hideAddToHomeInstructions();
+  
+  // הסתרת הכפתור מיידית
+  const iosButton = document.querySelector(CONFIG.SELECTORS.IOS_BUTTON);
+  if (iosButton) {
+    iosButton.style.display = 'none';
+    console.log('✅ iOS button hidden');
+  }
+}
+
 // הוספת פונקציות לחלון הגלובלי
 window.showAddToHomeInstructions = showAddToHomeInstructions;
 window.hideAddToHomeInstructions = hideAddToHomeInstructions;
+window.hideIOSButtonPermanently = hideIOSButtonPermanently;
 window.installAndroidApp = installAndroidApp;
 window.installPWA = installPWA;
 

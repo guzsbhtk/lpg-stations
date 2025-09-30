@@ -198,13 +198,22 @@ line-height: 1.5;
 }
 
 .add-to-home-instructions button {
-background: #007AFF;
-color: white;
-border: none;
-padding: 10px 20px;
-border-radius: 6px;
-cursor: pointer;
-font-size: 14px;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.add-to-home-instructions button:hover {
+  opacity: 0.85;
+}
+
+.add-to-home-instructions button:active {
+  opacity: 0.7;
 }
 
 .overlay {
@@ -269,7 +278,10 @@ style="display: inline-block; vertical-align: middle; margin: 0 4px; width: 24px
 </p>
 <p>2. בחר "הוסף למסך הבית" או "Add to Home Screen"</p>
 <p>3. לחץ על "הוסף" או "Add"</p>
-<button onclick="hideAddToHomeInstructions()">הבנתי</button>
+<div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+<button onclick="hideAddToHomeInstructions()" style="background: #007AFF; flex: 1;">הבנתי</button>
+<button onclick="hideIOSButtonPermanently()" style="background: #dc3545; flex: 1;">הסתר כפתור</button>
+</div>
 </div>
 
 <div id="search-container">
