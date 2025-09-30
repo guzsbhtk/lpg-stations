@@ -25,7 +25,7 @@ function requestGeolocation(stations) {
     // הצגת הודעה למשתמש על חיפוש המיקום
     const statusEl = appState.getElement('status');
     if (statusEl) {
-      statusEl.textContent = CONFIG.MESSAGES.SEARCHING_LOCATION;
+      statusEl.innerHTML = CONFIG.MESSAGES.SEARCHING_LOCATION;
     }
     
     console.log('🔍 Geolocation Debug:', {

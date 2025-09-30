@@ -41,7 +41,7 @@ class AppState {
     this.isLoading = isLoading;
     if (this.elements.status) {
       if (isLoading) {
-        this.elements.status.textContent = CONFIG.MESSAGES.LOADING;
+        this.elements.status.innerHTML = CONFIG.MESSAGES.LOADING;
       } else {
         this.elements.status.textContent = "";
       }

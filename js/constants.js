@@ -52,9 +52,9 @@ const CONFIG = {
   MESSAGES: {
     NO_STATIONS: "אין תחנות להצגה",
     NO_SEARCH_RESULTS: "לא נמצאו תחנות התואמות לחיפוש",
-    LOADING: "מביא נתונים מהגיליון…",
+    LOADING: '📡 טוען נתוני תחנות<span class="loading-dots"></span>',
     LOADING_LOCATION: "מציג תחנות... מבקש נתוני מיקום לחישוב מרחקים",
-    SEARCHING_LOCATION: "מחפש מיקום...",
+    SEARCHING_LOCATION: '📍 מאתר את המיקום שלך<span class="loading-dots"></span>',
     NO_STATIONS_FOUND: "לא נמצאו תחנות בגיליון",
     GEOLOCATION_NOT_SUPPORTED: "הדפדפן לא תומך במיקום – מציג רשימה ללא סינון"
   }
