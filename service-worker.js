@@ -1,5 +1,5 @@
 // Basic Service Worker for offline support and runtime caching
-const CACHE_NAME = 'lpg-stations-v14';
+const CACHE_NAME = 'lpg-stations-v15';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

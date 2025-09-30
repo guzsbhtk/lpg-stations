@@ -226,15 +226,21 @@ function setupControls() {
     searchInput.addEventListener("input", debounce(applyFilters, CONFIG.UI_DEBUG_DELAY + 50));
   }
   if (distanceRange) {
-    // כשמנסים לשנות את הסליידר בזמן חיפוש - מחיקת החיפוש ומניעת השינוי
-    distanceRange.addEventListener("mousedown", function(e) {
+    // פונקציה לטיפול במחיקת חיפוש כאשר לוחצים על הסליידר
+    const clearSearchOnInteraction = function(e) {
       if (searchInput && searchInput.value.trim()) {
         e.preventDefault(); // מונע את השינוי בסליידר
         searchInput.value = '';
         // עדכון מיידי של התצוגה
         applyFilters();
       }
-    });
+    };
+    
+    // תמיכה במובייל - אירועי מגע
+    distanceRange.addEventListener("touchstart", clearSearchOnInteraction);
+    
+    // תמיכה במחשב - אירועי עכבר
+    distanceRange.addEventListener("mousedown", clearSearchOnInteraction);
     
     distanceRange.addEventListener("click", function(e) {
       if (distanceRange.getAttribute('data-search-active') === 'true') {
@@ -245,6 +251,18 @@ function setupControls() {
         }
       }
     });
+    
+    // הוספת קליק על התווית "מרחק מקסימלי" - עובד גם במובייל וגם במחשב
+    const distanceLabel = distanceRange.parentElement?.querySelector('label');
+    if (distanceLabel) {
+      distanceLabel.addEventListener("click", function(e) {
+        if (searchInput && searchInput.value.trim()) {
+          e.preventDefault();
+          searchInput.value = '';
+          applyFilters();
+        }
+      });
+    }
     
     // גם עבור מקלדת (חצים)
     distanceRange.addEventListener("keydown", function(e) {
