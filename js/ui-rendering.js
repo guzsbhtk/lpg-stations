@@ -90,17 +90,10 @@ function applyFilters() {
 
   // חיפוש טקסט עם דירוג
   const term = searchInput.value.trim().toLowerCase();
+  
+  // עדכון מצב הסליידר והודעה בהתאם למצב החיפוש
+  updateDistanceControlsState(term, distanceRange, distanceValue);
   if (term) {
-    // בדיקה זמנית לניפוי באגים
-    if (term === 'קריית שמ') {
-      console.log('🔍 Testing search for "קריית שמ"');
-      const testStation = list.find(st => st.name && st.name.includes('קרית שמונה'));
-      if (testStation) {
-        console.log('Found test station:', testStation.name);
-        debugTextMatch(term, testStation.name);
-      }
-    }
-    
     // הוספת ציון דיוק לכל תחנה
     list = list.map((st) => {
       const nameScore = st.name ? getTextMatchScore(term, st.name) : 0;
@@ -170,6 +163,51 @@ function applyFilters() {
   renderStations(list, userPosGlobal);
 }
 
+// עדכון מצב בקרות המרחק בהתאם לחיפוש
+function updateDistanceControlsState(term, distanceRange, distanceValue) {
+  const distanceLabel = distanceRange?.parentElement?.querySelector('label');
+  const searchNotice = document.getElementById('search-notice');
+  
+  if (term) {
+    // יש חיפוש פעיל - נשבית את הסליידר ונציג הודעה
+    if (distanceRange) {
+      distanceRange.disabled = true;
+      distanceRange.style.opacity = '0.5';
+      distanceRange.style.cursor = 'not-allowed';
+    }
+    if (distanceLabel) {
+      distanceLabel.style.opacity = '0.5';
+    }
+    if (distanceValue) {
+      distanceValue.style.opacity = '0.5';
+    }
+    
+    // הצגת הודעה
+    if (searchNotice) {
+      searchNotice.style.display = 'block';
+      searchNotice.textContent = '🔍 מחפש תחנות בכל הארץ';
+    }
+  } else {
+    // אין חיפוש - נאפשר את הסליידר
+    if (distanceRange) {
+      distanceRange.disabled = false;
+      distanceRange.style.opacity = '1';
+      distanceRange.style.cursor = 'pointer';
+    }
+    if (distanceLabel) {
+      distanceLabel.style.opacity = '1';
+    }
+    if (distanceValue) {
+      distanceValue.style.opacity = '1';
+    }
+    
+    // הסתרת הודעה
+    if (searchNotice) {
+      searchNotice.style.display = 'none';
+    }
+  }
+}
+
 // חיפוש ידני
 function setupControls() {
   if (appState.isControlsSetup()) return; // מניעת הגדרה כפולה
@@ -184,6 +222,25 @@ function setupControls() {
     searchInput.addEventListener("input", debounce(applyFilters, CONFIG.UI_DEBUG_DELAY + 50));
   }
   if (distanceRange) {
+    // כשמנסים לשנות את הסליידר בזמן חיפוש - מחיקת החיפוש
+    distanceRange.addEventListener("mousedown", function() {
+      if (searchInput && searchInput.value.trim()) {
+        searchInput.value = '';
+        // עדכון מיידי של התצוגה
+        applyFilters();
+      }
+    });
+    
+    // גם עבור מקלדת (חצים)
+    distanceRange.addEventListener("keydown", function(e) {
+      if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') && 
+          searchInput && searchInput.value.trim()) {
+        searchInput.value = '';
+        // עדכון מיידי של התצוגה
+        applyFilters();
+      }
+    });
+    
     distanceRange.addEventListener("input", debounce(applyFilters, CONFIG.UI_DEBUG_DELAY));
   }
   if (sortSelect) {

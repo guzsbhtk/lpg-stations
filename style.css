@@ -48,6 +48,12 @@ main {
 
 #distanceRange {
   width: 200px;
+  transition: opacity 0.3s ease;
+}
+
+#distanceRange:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 #sortBy {
@@ -223,4 +229,31 @@ a.waze .icon {
 a.maps .icon {
   background: #fff;
   border-radius: 4px;
+}
+
+/* הודעת חיפוש */
+#search-notice {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* תמיכה בניגודיות גבוהה */
+body.high-contrast #search-notice {
+  background: #000 !important;
+  color: #0f0 !important;
+  border-color: #0f0 !important;
+}
+
+body.high-contrast #distanceRange:disabled {
+  opacity: 0.3 !important;
 }

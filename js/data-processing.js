@@ -35,6 +35,9 @@ function normalizeHebrewText(text) {
   if (!text) return '';
   return text
     .toLowerCase()
+    // החלפת אותיות כפולות לבודדות
+    .replace(/יי/g, 'י')     // יו"ד כפולה -> בודדת
+    .replace(/וו/g, 'ו')     // ו' כפולה -> בודדת
     // החלפת אותיות דומות
     .replace(/[יִי]/g, 'י')  // יו"ד ויו"ד עם נקודות
     .replace(/[וו]/g, 'ו')   // ו' רגיל וו' עם נקודות
@@ -44,10 +47,9 @@ function normalizeHebrewText(text) {
     .replace(/[נן]/g, 'ן')   // נ' רגיל ונ' סופית
     .replace(/[פף]/g, 'פ')   // פ' רגיל ופ' סופית
     .replace(/[צץ]/g, 'צ')   // צ' רגיל וצ' סופית
-    .replace(/[תט]/g, 'ת')   // ת' וט' (לפעמים מתחלפות)
     // הסרת רווחים מיותרים ונקודות
     .replace(/\s+/g, ' ')
-    .replace(/[.,\-_]/g, '')
+    .replace(/[.,\-_'"״]/g, '')
     .trim();
 }
 
