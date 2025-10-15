@@ -10,30 +10,11 @@ body {
 header {
   background: linear-gradient(90deg, #2e7d32, #66bb6a);
   color: #fff;
-  padding: 1rem;
+  padding: 2rem 1rem;
   text-align: center;
 }
 
-header h1 {
-  margin: 0;
-}
 
-.holiday-greeting {
-  margin: 0;
-  font-size: 0.9rem;
-  font-weight: 500;
-  opacity: 0.95;
-  animation: gentlePulse 3s ease-in-out infinite;
-}
-
-@keyframes gentlePulse {
-  0%, 100% {
-    opacity: 0.95;
-  }
-  50% {
-    opacity: 1;
-  }
-}
 
 main {
   padding: 1rem;
@@ -268,11 +249,6 @@ a.maps .icon {
   }
 }
 
-/* תמיכה בניגודיות גבוהה */
-body.high-contrast .holiday-greeting {
-  color: #fff !important;
-  opacity: 1 !important;
-}
 
 body.high-contrast #search-notice {
   background: #000 !important;
