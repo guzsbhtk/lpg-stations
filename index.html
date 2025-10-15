@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://docs.google.com https://plausible.io; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://docs.google.com https://plausible.io; worker-src 'self' blob:; geolocation 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://docs.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://docs.google.com; worker-src 'self' blob:; geolocation 'self';">
 
 <!-- Meta tags לאפל -->
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,8 +23,6 @@
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
 <link rel="stylesheet" href="style.css" />
 <link rel="manifest" href="manifest.json" />
-<!-- Plausible Analytics -->
-<script defer data-domain="guzsbhtk.github.io/lpg-stations" src="https://plausible.io/js/plausible.js"></script>
 
 <script>
 if ("serviceWorker" in navigator) {
@@ -246,7 +244,6 @@ font-weight: 600;
 <div id="offline-message" role="alert" aria-live="polite">אין חיבור לאינטרנט — מוצג תוכן שמור</div>
 <header>
 <h1>תחנות גפ"מ קרובות אלי</h1>
-<p class="holiday-greeting">חג סוכות שמח!🌿🍋🌴🎉🇮🇱</p>
 </header>
 
 <!-- כפתור הוספה למסך הבית לאפל -->
