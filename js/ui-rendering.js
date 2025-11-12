@@ -1,5 +1,230 @@
 // רינדור ממשק משתמש
 
+// פתיחת שכבת-על של המפה
+function openMap() {
+  const overlay = appState.getElement('mapOverlay');
+  const mapContainer = appState.getElement('mapContainer');
+  if (!overlay || !mapContainer) {
+    console.error('לא נמצאו אלמנטי המפה');
+    return;
+  }
+
+  // הוסף classes לגוף
+  document.documentElement.classList.add('map-is-open');
+  document.body.classList.add('map-is-open');
+  
+  // הצג את האוברליי
+  overlay.style.display = 'block';
+  
+  // סנכרן פקדים במפה עם הפקדים הרגילים
+  const distanceRange = appState.getElement('distanceRange');
+  const mapDistanceRange = document.getElementById('mapDistanceRange');
+  const mapDistanceValue = document.getElementById('mapDistanceValue');
+  
+  if (distanceRange && mapDistanceRange) {
+    mapDistanceRange.value = distanceRange.value;
+    if (mapDistanceValue) {
+      mapDistanceValue.textContent = distanceRange.value;
+    }
+  }
+  
+  // נקה את מיכל המפה
+  mapContainer.innerHTML = '';
+  
+  // השמד מפה קיימת
+  const oldMap = appState.getMap();
+  if (oldMap) {
+    try {
+      oldMap.remove();
+    } catch(e) {}
+    appState.setMap(null);
+    appState.setMapMarkersLayer(null);
+  }
+  
+  // חכה שהאוברליי יהיה גלוי ואז צור את המפה
+  setTimeout(function() {
+    try {
+      // בדוק ש-Leaflet קיים
+      if (typeof L === 'undefined') {
+        console.error('Leaflet לא נטען');
+        return;
+      }
+      
+      // הגדר אייקונים
+      delete L.Icon.Default.prototype._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png'
+      });
+      
+      // צור את המפה
+      const map = L.map(mapContainer, {
+        zoomControl: true
+      }).setView(CONFIG.MAP.DEFAULT_CENTER, CONFIG.MAP.DEFAULT_ZOOM);
+      
+      // הוסף טאפים
+      L.tileLayer(CONFIG.MAP.TILE_URL, {
+        attribution: CONFIG.MAP.TILE_ATTRIBUTION,
+        maxZoom: 18
+      }).addTo(map);
+      
+      // צור שכבת סמנים
+      const markersLayer = L.featureGroup().addTo(map);
+      
+      // שמור במצב
+      appState.setMap(map);
+      appState.setMapMarkersLayer(markersLayer);
+      
+      // צור סמן למשתמש - עיגול כחול
+      const userMarker = L.marker([0, 0], {
+        icon: L.divIcon({
+          className: 'user-location-marker',
+          html: '<div class="user-marker-dot" title="המיקום שלך"></div>',
+          iconSize: [24, 24],
+          iconAnchor: [12, 12]
+        })
+      });
+      appState.setUserMarker(userMarker);
+      
+      console.log('✅ המפה אותחלה בהצלחה');
+      
+      // הפעל פילטרים
+      setTimeout(function() {
+        applyFilters();
+      }, 100);
+      
+    } catch (err) {
+      console.error('❌ שגיאה באתחול המפה:', err);
+      mapContainer.innerHTML = '<div style="padding: 20px; text-align: center;">שגיאה בטעינת המפה</div>';
+    }
+  }, 100);
+}
+
+// סגירת שכבת-על של המפה
+function closeMap() {
+  const overlay = appState.getElement('mapOverlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+  }
+  
+  document.documentElement.classList.remove('map-is-open');
+  document.body.classList.remove('map-is-open');
+}
+
+// (חדש) עדכון הסמנים במפה
+function updateMapMarkers(stationsToShow, userPos) {
+  const map = appState.getMap();
+  const markersLayer = appState.getMapMarkersLayer();
+  if (!map || !markersLayer) return;
+
+  markersLayer.clearLayers();
+  
+  if (!stationsToShow || stationsToShow.length === 0) {
+    return; 
+  }
+
+  stationsToShow.forEach(st => {
+    try {
+      const marker = L.marker([st.lat, st.lng]);
+      
+      // הוסף מרחק אם יש מיקום משתמש
+      const distanceText = userPos && st.distance !== undefined 
+        ? `<p class="distance">📏 ${st.distance.toFixed(1)} ק"מ ממיקומך</p>` 
+        : '';
+      
+      const popupContent = `
+        <h3>${st.name}</h3>
+        <p>${st.city || ''}</p>
+        <p class="price">₪${st.price}</p>
+        ${st.date ? `<p class="date">🕒 עודכן: ${st.date}</p>` : ''}
+        ${distanceText}
+        <a href="https://waze.com/ul?ll=${st.lat}%2C${st.lng}&navigate=yes" target="_blank" rel="noopener noreferrer">🚗 נווט עם Waze</a>
+      `;
+      
+      marker.bindPopup(popupContent);
+      marker.addTo(markersLayer);
+    } catch (err) {
+      console.warn("Failed to create marker for station:", st, err);
+    }
+  });
+}
+
+// (חדש) עדכון תצוגת המפה (זום ומרכז) בהתאם לפילטרים
+function updateMapView(filteredStations, userPos, searchTerm, maxDist) {
+  const map = appState.getMap();
+  const markersLayer = appState.getMapMarkersLayer();
+  if (!map) return;
+
+  const oldCircle = appState.getRadiusCircle();
+  if (oldCircle) {
+    map.removeLayer(oldCircle);
+    appState.setRadiusCircle(null);
+  }
+  
+  const userMarker = appState.getUserMarker();
+  if (userMarker) {
+    map.removeLayer(userMarker);
+  }
+
+  // מקרה 1: יש חיפוש פעיל
+  if (searchTerm) {
+    if (filteredStations.length > 0) {
+      const bounds = markersLayer.getBounds();
+      if (bounds.isValid()) {
+        map.fitBounds(bounds.pad(0.1)); 
+      }
+    } else {
+      map.setView(CONFIG.MAP.DEFAULT_CENTER, CONFIG.MAP.DEFAULT_ZOOM); 
+    }
+  }
+  // מקרה 2: אין חיפוש, יש מיקום משתמש
+  else if (userPos) {
+    if (userMarker) {
+      userMarker.setLatLng([userPos.lat, userPos.lng]).addTo(map);
+      userMarker.bindPopup('<strong>📍 המיקום שלך</strong>');
+      // אל תפתח אוטומטית - המשתמש יכול ללחוץ אם הוא רוצה
+    }
+    
+    // בדוק אם מוצגות כל התחנות
+    const mapShowAll = document.getElementById('mapShowAll');
+    const isShowingAll = mapShowAll && mapShowAll.checked;
+    
+    if (isShowingAll) {
+      // אם מוצגות כל התחנות - התאם את הזום להציג את כולן
+      if (filteredStations.length > 0 && markersLayer && markersLayer.getLayers().length > 0) {
+        const bounds = markersLayer.getBounds();
+        if (bounds.isValid()) {
+          map.fitBounds(bounds.pad(0.1));
+        } else {
+          map.setView(CONFIG.MAP.DEFAULT_CENTER, 8);
+        }
+      } else {
+        map.setView(CONFIG.MAP.DEFAULT_CENTER, 8);
+      }
+    } else {
+      // זום רגיל לפי מרחק
+      const zoom = Math.max(8, 16 - Math.log2(maxDist * 2));
+      map.setView([userPos.lat, userPos.lng], zoom);
+      
+      // הצג מעגל רדיוס
+      const circle = L.circle([userPos.lat, userPos.lng], {
+        radius: maxDist * 1000, 
+        color: '#2e7d32',
+        fillColor: '#2e7d32',
+        fillOpacity: 0.1,
+        weight: 1
+      }).addTo(map);
+      appState.setRadiusCircle(circle);
+    }
+  }
+  // מקרה 3: אין חיפוש, אין מיקום
+  else {
+    map.setView(CONFIG.MAP.DEFAULT_CENTER, CONFIG.MAP.DEFAULT_ZOOM);
+  }
+}
+
+
 function renderStations(stations, userPos) {
   const stationsContainer = appState.getElement('stationsContainer');
   stationsContainer.innerHTML = "";
@@ -55,7 +280,6 @@ function renderStations(stations, userPos) {
     actions.appendChild(wazeLink);
     actions.appendChild(mapsLink);
 
-    // כפתור עדכון מחיר אם בטווח מוגדר
     if (st.distance !== undefined && st.distance <= CONFIG.UPDATE_DISTANCE_THRESHOLD) {
       const updateLink = document.createElement("a");
       updateLink.className = "update";
@@ -72,7 +296,6 @@ function renderStations(stations, userPos) {
 }
 
 function applyFilters() {
-  const stationsContainer = appState.getElement('stationsContainer');
   const searchInput = appState.getElement('searchInput');
   const distanceRange = appState.getElement('distanceRange');
   const distanceValue = appState.getElement('distanceValue');
@@ -87,66 +310,50 @@ function applyFilters() {
   }
 
   let list = allStations;
-
-  // חיפוש טקסט עם דירוג
   const term = searchInput.value.trim().toLowerCase();
   
-  // עדכון מצב הסליידר והודעה בהתאם למצב החיפוש
   updateDistanceControlsState(term, distanceRange, distanceValue);
+  
   if (term) {
-    // הוספת ציון דיוק לכל תחנה
     list = list.map((st) => {
       const nameScore = st.name ? getTextMatchScore(term, st.name) : 0;
       const cityScore = st.city ? getTextMatchScore(term, st.city) : 0;
       const maxScore = Math.max(nameScore, cityScore);
-      
-      return {
-        ...st,
-        searchScore: maxScore
-      };
-    }).filter((st) => st.searchScore > 0); // רק תחנות עם התאמה
-    
-    // מיון לפי ציון דיוק (גבוה יותר קודם)
+      return { ...st, searchScore: maxScore };
+    }).filter((st) => st.searchScore > 0);
     list.sort((a, b) => b.searchScore - a.searchScore);
   }
 
-  // סינון מרחק
   const maxDist = parseFloat(distanceRange.value);
   if (isNaN(maxDist) || maxDist <= 0) {
     console.warn('Invalid distance range value:', distanceRange.value);
     return;
   }
   distanceValue.textContent = maxDist;
-  if (!term && userPosGlobal) {
+  
+  // בדוק אם להציג את כל התחנות (מהמפה)
+  const mapShowAll = document.getElementById('mapShowAll');
+  const isShowingAll = mapShowAll && mapShowAll.checked;
+  
+  if (!term && userPosGlobal && !isShowingAll) {
     list = list.filter((st) => st.distance <= maxDist);
   }
 
-  // מיון
   const sortBy = sortSelect.value;
   
   if (term) {
-    // כשיש חיפוש פעיל - מיון לפי דיוק החיפוש (כבר ממוין מהחיפוש)
-    // ומיון משני לפי בחירת המשתמש במקרה של דיוק זהה
     if (sortBy === "price") {
-      // מיון משני לפי מחיר עבור תחנות עם אותו ציון דיוק
       list = list.slice().sort((a, b) => {
-        if (a.searchScore !== b.searchScore) {
-          return b.searchScore - a.searchScore; // דיוק גבוה יותר קודם
-        }
-        return parseFloat(a.price) - parseFloat(b.price); // מחיר נמוך יותר קודם
+        if (a.searchScore !== b.searchScore) return b.searchScore - a.searchScore;
+        return parseFloat(a.price) - parseFloat(b.price);
       });
     } else if (sortBy === "distance" && userPosGlobal) {
-      // מיון משני לפי מרחק עבור תחנות עם אותו ציון דיוק
       list = list.slice().sort((a, b) => {
-        if (a.searchScore !== b.searchScore) {
-          return b.searchScore - a.searchScore; // דיוק גבוה יותר קודם
-        }
-        return a.distance - b.distance; // מרחק קטן יותר קודם
+        if (a.searchScore !== b.searchScore) return b.searchScore - a.searchScore;
+        return a.distance - b.distance;
       });
     }
-    // אם לא - הרשימה כבר ממוינת לפי דיוק החיפוש
   } else {
-    // כשאין חיפוש פעיל - מיון רגיל לפי בחירת המשתמש
     if (sortBy === "price") {
       list = list.slice().sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
     } else if (sortBy === "distance" && userPosGlobal) {
@@ -154,26 +361,33 @@ function applyFilters() {
     }
   }
 
-  // הצגת הודעה אם אין תוצאות
+  // עדכן את הרשימה (תמיד)
   if (list.length === 0) {
     appState.showNoSearchResults();
-    return;
+  } else {
+    renderStations(list, userPosGlobal);
   }
 
-  renderStations(list, userPosGlobal);
+  // עדכן את המפה רק אם היא מאותחלת וגלויה
+  const map = appState.getMap();
+  const overlay = appState.getElement('mapOverlay');
+  if (map && overlay && overlay.style.display === 'block') {
+    updateMapMarkers(list, userPosGlobal);
+    updateMapView(list, userPosGlobal, term, maxDist);
+    console.log(`🗺️ מוצגות ${list.length} תחנות במפה`);
+  }
 }
 
-// עדכון מצב בקרות המרחק בהתאם לחיפוש
+
 function updateDistanceControlsState(term, distanceRange, distanceValue) {
   const distanceLabel = distanceRange?.parentElement?.querySelector('label');
   const searchNotice = document.getElementById('search-notice');
   
   if (term) {
-    // יש חיפוש פעיל - נסמן את הסליידר כמושבת (אבל לא באמת disabled כדי שאירועים יעבדו)
     if (distanceRange) {
       distanceRange.setAttribute('data-search-active', 'true');
       distanceRange.style.opacity = '0.5';
-      distanceRange.style.cursor = 'pointer'; // לשנות ל-pointer כדי לאותת שאפשר ללחוץ
+      distanceRange.style.cursor = 'pointer'; 
       distanceRange.style.pointerEvents = 'auto';
     }
     if (distanceLabel) {
@@ -184,13 +398,11 @@ function updateDistanceControlsState(term, distanceRange, distanceValue) {
       distanceValue.style.opacity = '0.5';
     }
     
-    // הצגת הודעה
     if (searchNotice) {
       searchNotice.style.display = 'block';
       searchNotice.textContent = '🔍 מחפש תחנות בכל הארץ';
     }
   } else {
-    // אין חיפוש - נאפשר את הסליידר
     if (distanceRange) {
       distanceRange.removeAttribute('data-search-active');
       distanceRange.style.opacity = '1';
@@ -205,7 +417,6 @@ function updateDistanceControlsState(term, distanceRange, distanceValue) {
       distanceValue.style.opacity = '1';
     }
     
-    // הסתרת הודעה
     if (searchNotice) {
       searchNotice.style.display = 'none';
     }
@@ -214,37 +425,87 @@ function updateDistanceControlsState(term, distanceRange, distanceValue) {
 
 // חיפוש ידני
 function setupControls() {
-  if (appState.isControlsSetup()) return; // מניעת הגדרה כפולה
+  if (appState.isControlsSetup()) return; 
   appState.setControlsSetup(true);
   
   const searchInput = appState.getElement('searchInput');
   const distanceRange = appState.getElement('distanceRange');
   const sortSelect = appState.getElement('sortSelect');
   
+  const openMapButton = appState.getElement('openMapButton');
+  const closeMapButton = appState.getElement('closeMapButton');
+  
+  // פקדים בתוך המפה
+  const mapDistanceRange = document.getElementById('mapDistanceRange');
+  const mapDistanceValue = document.getElementById('mapDistanceValue');
+  const mapShowAll = document.getElementById('mapShowAll');
+  
   if (searchInput) {
-    // צמצום קריאות עיבוד בעת הקלדה
     searchInput.addEventListener("input", debounce(applyFilters, CONFIG.UI_DEBUG_DELAY + 50));
   }
+  
+  // סנכרון סליידר המרחק במפה
+  if (mapDistanceRange && distanceRange) {
+    mapDistanceRange.addEventListener("input", function() {
+      const value = mapDistanceRange.value;
+      if (mapDistanceValue) {
+        mapDistanceValue.textContent = value;
+      }
+      // סנכרן עם הסליידר הרגיל
+      distanceRange.value = value;
+      const distanceValue = appState.getElement('distanceValue');
+      if (distanceValue) {
+        distanceValue.textContent = value;
+      }
+      // עדכן את המפה
+      applyFilters();
+    });
+    
+    // סנכרון הפוך - כשמשנים את הסליידר הרגיל
+    distanceRange.addEventListener("input", function() {
+      mapDistanceRange.value = distanceRange.value;
+      if (mapDistanceValue) {
+        mapDistanceValue.textContent = distanceRange.value;
+      }
+    });
+  }
+  
+  // checkbox "הצג הכל" במפה
+  if (mapShowAll) {
+    mapShowAll.addEventListener("change", function() {
+      if (mapShowAll.checked) {
+        // השבת את הסליידר
+        if (mapDistanceRange) {
+          mapDistanceRange.disabled = true;
+        }
+        console.log('🗺️ מציג את כל התחנות בארץ');
+      } else {
+        // הפעל את הסליידר
+        if (mapDistanceRange) {
+          mapDistanceRange.disabled = false;
+        }
+        console.log('🗺️ חוזר לסינון לפי מרחק');
+      }
+      // עדכן את המפה
+      applyFilters();
+    });
+  }
+  
   if (distanceRange) {
-    // פונקציה לטיפול במחיקת חיפוש כאשר לוחצים על הסליידר
     const clearSearchOnInteraction = function(e) {
       if (searchInput && searchInput.value.trim()) {
-        e.preventDefault(); // מונע את השינוי בסליידר
+        e.preventDefault(); 
         searchInput.value = '';
-        // עדכון מיידי של התצוגה
         applyFilters();
       }
     };
     
-    // תמיכה במובייל - אירועי מגע
     distanceRange.addEventListener("touchstart", clearSearchOnInteraction);
-    
-    // תמיכה במחשב - אירועי עכבר
     distanceRange.addEventListener("mousedown", clearSearchOnInteraction);
     
     distanceRange.addEventListener("click", function(e) {
       if (distanceRange.getAttribute('data-search-active') === 'true') {
-        e.preventDefault(); // מונע את השינוי בסליידר
+        e.preventDefault(); 
         if (searchInput && searchInput.value.trim()) {
           searchInput.value = '';
           applyFilters();
@@ -252,7 +513,6 @@ function setupControls() {
       }
     });
     
-    // הוספת קליק על התווית "מרחק מקסימלי" - עובד גם במובייל וגם במחשב
     const distanceLabel = distanceRange.parentElement?.querySelector('label');
     if (distanceLabel) {
       distanceLabel.addEventListener("click", function(e) {
@@ -264,19 +524,16 @@ function setupControls() {
       });
     }
     
-    // גם עבור מקלדת (חצים)
     distanceRange.addEventListener("keydown", function(e) {
       if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') && 
           searchInput && searchInput.value.trim()) {
-        e.preventDefault(); // מונע את השינוי בסליידר
+        e.preventDefault(); 
         searchInput.value = '';
-        // עדכון מיידי של התצוגה
         applyFilters();
       }
     });
     
     distanceRange.addEventListener("input", function(e) {
-      // אם יש חיפוש פעיל - לא לאפשר שינוי
       if (distanceRange.getAttribute('data-search-active') === 'true') {
         e.preventDefault();
         return;
@@ -284,7 +541,19 @@ function setupControls() {
       debounce(applyFilters, CONFIG.UI_DEBUG_DELAY)();
     });
   }
+  
   if (sortSelect) {
     sortSelect.addEventListener("change", applyFilters);
   }
+  
+  if (openMapButton) {
+    openMapButton.addEventListener('click', openMap);
+  }
+  if (closeMapButton) {
+    closeMapButton.addEventListener('click', closeMap);
+  }
 }
+
+// הוספת userMarker ל-AppState
+AppState.prototype.setUserMarker = function(marker) { this.userMarker = marker; };
+AppState.prototype.getUserMarker = function() { return this.userMarker; };

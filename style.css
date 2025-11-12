@@ -7,6 +7,14 @@ body {
   direction: rtl;
 }
 
+/* (תיקון קריטי) מוסיף גובה 100% כשהמפה פתוחה */
+/* זה מה שפותר את בעיית הריבועים הלבנים */
+html.map-is-open,
+body.map-is-open {
+  height: 100%;
+  overflow: hidden;
+}
+
 header {
   background: linear-gradient(90deg, #2e7d32, #66bb6a);
   color: #fff;
@@ -14,7 +22,172 @@ header {
   text-align: center;
 }
 
+/* שכבת-על למפה - מסך מלא */
+#map-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  z-index: 2000;
+  display: none;
+  overflow: hidden;
+}
 
+/* מיכל המפה בתוך שכבת-העל */
+#map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* כפתור סגירת מפה */
+#close-map-btn {
+  position: absolute;
+  top: 15px;
+  left: 15px; /* RTL - יהיה בפינה הרחוקה (שמאל) */
+  z-index: 2001; /* מעל המפה */
+  background: #fff;
+  color: #333;
+  border: 2px solid #aaa;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+
+#close-map-btn:hover {
+  background: #f4f4f4;
+  color: #000;
+}
+
+/* פקדי סינון בתוך המפה */
+#map-controls {
+  position: absolute;
+  top: 15px;
+  right: 15px; /* RTL - יהיה בצד ימין */
+  z-index: 2001;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 250px;
+}
+
+.map-control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.map-control-item label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.map-control-item .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  user-select: none;
+}
+
+.map-control-item .checkbox-label:hover {
+  color: #2e7d32;
+}
+
+#mapDistanceRange {
+  width: 100%;
+  cursor: pointer;
+}
+
+#mapShowAll {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #2e7d32;
+}
+
+#mapDistanceRange:focus,
+#mapShowAll:focus {
+  outline: 2px solid #2e7d32;
+  outline-offset: 2px;
+}
+
+/* השבתה של הסליידר כשמציגים הכל */
+#mapDistanceRange:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* סמן מיקום משתמש */
+.user-location-marker {
+  background: none !important;
+  border: none !important;
+}
+
+.user-marker-dot {
+  width: 24px;
+  height: 24px;
+  background: #2196F3;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.5), 0 0 0 2px rgba(33, 150, 243, 0.3);
+  animation: pulse-user 2s ease-in-out infinite;
+}
+
+@keyframes pulse-user {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.5), 0 0 0 2px rgba(33, 150, 243, 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 12px rgba(33, 150, 243, 0.7), 0 0 0 6px rgba(33, 150, 243, 0.2);
+  }
+}
+
+/* responsive - במסכים קטנים */
+@media (max-width: 600px) {
+  #map-controls {
+    top: 10px;
+    right: 10px;
+    min-width: 200px;
+    padding: 12px;
+  }
+  
+  #close-map-btn {
+    top: 10px;
+    left: 10px;
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+}
 
 main {
   padding: 1rem;
@@ -66,6 +239,32 @@ main {
   background: #fff;
 }
 
+/* (חדש) עיצוב כפתור פתיחת מפה */
+.map-button {
+  padding: 0.4rem 0.8rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: 1px solid #2e7d32;
+  border-radius: 6px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.map-button:hover {
+  background: #dcedc8;
+}
+
+.map-button .icon {
+  font-size: 1.2em;
+  margin: 0;
+  padding: 0;
+}
+
+
 #search {
   width: 100%;
   max-width: 500px;
@@ -92,9 +291,58 @@ main {
 /* Focus indicators for accessibility */
 #search:focus,
 #distanceRange:focus,
-#sortBy:focus {
+#sortBy:focus,
+.map-button:focus,
+#close-map-btn:focus {
   outline: 2px solid #2e7d32;
   outline-offset: 2px;
+}
+
+/* (חדש) עיצוב פופ-אפ במפה */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px !important;
+}
+
+.leaflet-popup-content {
+  text-align: right !important;
+  direction: rtl;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+.leaflet-popup-content h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.leaflet-popup-content p {
+  margin: 0.25rem 0;
+  color: #333;
+}
+
+.leaflet-popup-content .price {
+  font-weight: bold;
+  color: #d32f2f;
+  font-size: 1.1rem;
+}
+
+.leaflet-popup-content .distance {
+  font-size: 0.85rem;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.leaflet-popup-content .date {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.leaflet-popup-content a {
+  display: block;
+  margin-top: 8px;
+  color: #007AFF;
+  font-weight: 600;
+  text-decoration: none;
 }
 
 /* נגישות - ניגודיות גבוהה */
@@ -116,11 +364,45 @@ body.high-contrast .station {
 }
 
 body.high-contrast #search,
-body.high-contrast #sortBy {
+body.high-contrast #sortBy,
+body.high-contrast .map-button {
   background: #000 !important;
   color: #fff !important;
   border: 1px solid #fff !important;
 }
+
+/* (חדש) ניגודיות גבוהה למפה */
+body.high-contrast #map-overlay {
+  background: #000 !important;
+}
+body.high-contrast #map-overlay.map-overlay-open {
+  background: #000 !important;
+}
+body.high-contrast #map-overlay.map-overlay-open #map {
+  height: 100vh !important;
+  width: 100vw !important;
+}
+body.high-contrast #close-map-btn {
+  background: #222 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+body.high-contrast .leaflet-tile {
+  filter: grayscale(100%) contrast(150%);
+}
+
+body.high-contrast .leaflet-popup-content-wrapper,
+body.high-contrast .leaflet-popup-tip {
+  background: #111 !important;
+  color: #fff !important;
+}
+
+body.high-contrast .leaflet-popup-content h3,
+body.high-contrast .leaflet-popup-content p,
+body.high-contrast .leaflet-popup-content a {
+  color: #fff !important;
+}
+
 
 /* נגישות - רווחים מורחבים */
 body.increased-spacing {
