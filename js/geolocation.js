@@ -108,7 +108,7 @@ function requestGeolocation(stations) {
           const statusEl = appState.getElement('status');
           if (statusEl) statusEl.textContent = "";
           
-          // עדכון התצוגה עם סינון לפי מרחק מקסימלי
+          // קריאה לסינון (עכשיו הפונקציה קיימת וזה יעבוד)
           applyFilters();
         },
         (err) => {
@@ -127,12 +127,23 @@ function requestGeolocation(stations) {
           };
           console.log(`📋 Error details: ${errorDetails[err.code] || 'Unknown error'}`);
           
+          // (תיקון) אם המשתמש סירב, אל תנסה שוב
+          if (err.code === 1) { // PERMISSION_DENIED
+             console.log('🚫 User denied permission. Stopping geolocation attempts.');
+             appState.showError(`${geoErrorText(err.code)} – מציג רשימה מלאה`);
+             applyFilters(); // הפעל סינון ללא מיקום
+             return; // עצור ריצה
+          }
+          
           if (attemptCount < maxAttempts) {
             console.log(`⏳ Trying again in ${CONFIG.GEOLOCATION_RETRY_DELAY}ms...`);
             setTimeout(tryGeolocation, CONFIG.GEOLOCATION_RETRY_DELAY);
           } else {
             console.log('🚫 All geolocation attempts failed');
             appState.showError(`${geoErrorText(err.code)} – מציג רשימה מלאה`);
+
+            // הפעל סינון ללא מיקום
+            applyFilters();
           }
         },
         currentOptions
@@ -143,7 +154,8 @@ function requestGeolocation(stations) {
     tryGeolocation();
   } else {
     appState.showError(CONFIG.MESSAGES.GEOLOCATION_NOT_SUPPORTED);
-    // התחנות כבר מוצגות, רק נעדכן את הסטטוס
+    // הפעל סינון ללא מיקום
+    applyFilters();
   }
 }
 

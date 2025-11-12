@@ -41,10 +41,9 @@ async function init() {
     showIOSAddToHomeButton();
     showAndroidInstallButton(); // הוספת כפתור לאנדרואיד
     
-    // בדיקה נוספת לכפתור PWA - וודא שהוא לא מופיע אם האפליקציה מותקנת או באנדרואיד עם שירותי גוגל
+    // בדיקה נוספת לכפתור PWA
     const pwaInstallButton = document.getElementById('pwa-install');
     if (pwaInstallButton) {
-      // הסתר את הכפתור אם זה לא מכשיר נייד, אם האפליקציה מותקנת, או באנדרואיד עם שירותי גוגל
       if (!isMobile() || isStandalone() || (isAndroid() && hasGooglePlayServices())) {
         pwaInstallButton.style.display = 'none';
         console.log('🚫 PWA Install Button hidden - not mobile, app already installed, or Android with Google Play Services');
@@ -55,6 +54,7 @@ async function init() {
   }
 
   // בקשת מיקום במקביל (לא חוסמת)
+  // הפונקציה הזו תקרא ל-applyFilters() כשתסתיים, וזה יעבוד מהר
   requestGeolocation(stations);
 
   // רענון מיקום אוטומטי כל דקה
