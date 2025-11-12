@@ -56,7 +56,7 @@ header {
 #close-map-btn {
   position: absolute;
   top: 15px;
-  left: 15px; /* RTL - יהיה בפינה הרחוקה (שמאל) */
+  left: 60px; /* RTL - הוזז ימינה כדי לא להסתיר את כפתור ההגדלה */
   z-index: 2001; /* מעל המפה */
   background: #fff;
   color: #333;
@@ -182,7 +182,7 @@ header {
   
   #close-map-btn {
     top: 10px;
-    left: 10px;
+    left: 50px;
     width: 36px;
     height: 36px;
     font-size: 18px;
