@@ -7,11 +7,6 @@ class AppState {
     this.isLoading = false;
     this.elements = {};
     
-    // (חדש) מצב המפה
-    this.map = null;
-    this.mapMarkersLayer = null;
-    this.radiusCircle = null; // (חדש) לשמור את עיגול הרדיוס
-    
     this.initElements();
   }
   
@@ -22,13 +17,7 @@ class AppState {
       searchInput: document.querySelector(CONFIG.SELECTORS.SEARCH_INPUT),
       distanceRange: document.querySelector(CONFIG.SELECTORS.DISTANCE_RANGE),
       distanceValue: document.querySelector(CONFIG.SELECTORS.DISTANCE_VALUE),
-      sortSelect: document.querySelector(CONFIG.SELECTORS.SORT_SELECT),
-      
-      // (חדש) אלמנטים של המפה
-      mapOverlay: document.querySelector(CONFIG.SELECTORS.MAP_OVERLAY),
-      mapContainer: document.querySelector(CONFIG.SELECTORS.MAP_CONTAINER),
-      openMapButton: document.querySelector(CONFIG.SELECTORS.OPEN_MAP_BUTTON),
-      closeMapButton: document.querySelector(CONFIG.SELECTORS.CLOSE_MAP_BUTTON)
+      sortSelect: document.querySelector(CONFIG.SELECTORS.SORT_SELECT)
     };
   }
   
@@ -71,14 +60,6 @@ class AppState {
     return this.elements[name];
   }
   
-  // (חדש) Getters/Setters של המפה
-  setMap(mapInstance) { this.map = mapInstance; }
-  getMap() { return this.map; }
-  setMapMarkersLayer(layer) { this.mapMarkersLayer = layer; }
-  getMapMarkersLayer() { return this.mapMarkersLayer; }
-  setRadiusCircle(circle) { this.radiusCircle = circle; }
-  getRadiusCircle() { return this.radiusCircle; }
-  
   showError(message) {
     if (this.elements.status) {
       this.elements.status.innerHTML = createErrorMessage(message);
@@ -109,3 +90,5 @@ function updateContainer(container, message) {
 
 // יצירת instance יחיד
 const appState = new AppState();
+
+

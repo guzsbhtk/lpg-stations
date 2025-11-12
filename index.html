@@ -3,20 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta http-equiv="Content-Security-Policy" content="
-  default-src 'self'; 
-  script-src 'self' 'unsafe-inline' https://docs.google.com https://unpkg.com/leaflet@1.9.4/dist/leaflet.js; 
-  style-src 'self' 'unsafe-inline' https://unpkg.com/leaflet@1.9.4/dist/leaflet.css; 
-  img-src 'self' data: https: https://*.tile.openstreetmap.org; 
-  connect-src 'self' https:; 
-  worker-src 'self' blob:;
-">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://docs.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://docs.google.com; worker-src 'self' blob:; geolocation 'self';">
 
+<!-- Meta tags לאפל -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="תחנות גפ״מ">
 <meta name="format-detection" content="telephone=no">
 
+<!-- Apple Touch Icons -->
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-512.png">
@@ -26,9 +21,6 @@
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhpmA9A/xsP/lTggTDBYnXYFSMN+eFMBWjBw=" crossorigin=""/>
-
 <link rel="stylesheet" href="style.css" />
 <link rel="manifest" href="manifest.json" />
 
@@ -255,21 +247,25 @@ font-weight: 600;
 
 </header>
 
+<!-- כפתור הוספה למסך הבית לאפל -->
 <button id="ios-add-to-home" class="ios-add-to-home" onclick="showAddToHomeInstructions()">
 <span class="icon">📱</span>
 הוסף למסך הבית
 </button>
 
-<button id="android-install" class="android-install" onclick="installAndroidApp()">
+<!-- כפתור התקנה לאנדרואיד -->
+    <button id="android-install" class="android-install" onclick="installAndroidApp()">
     <span class="icon">📲</span>
     התקן אפליקציה
     </button>
 
-<button id="pwa-install" class="pwa-install" onclick="installPWA()">
+<!-- כפתור התקנה PWA -->
+    <button id="pwa-install" class="pwa-install" onclick="installPWA()">
     <span class="icon">⚡</span>
     התקן אפליקציה
     </button>
 
+<!-- הודעת הוראות הוספה למסך הבית -->
 <div class="overlay" id="overlay"></div>
 <div class="add-to-home-instructions" id="add-to-home-instructions">
 <h3>הוסף למסך הבית</h3>
@@ -300,9 +296,6 @@ title="סינון לפי מרחק פעיל רק ללא חיפוש טקסט" />
 <option value="distance">מיון לפי מרחק</option>
 <option value="price">מיון לפי מחיר</option>
 </select>
-<button id="open-map-btn" class="map-button">
-  <span class="icon">🗺️</span> הצג מפה
-</button>
 </div>
 <div id="search-notice" style="
   text-align: center;
@@ -323,6 +316,7 @@ title="סינון לפי מרחק פעיל רק ללא חיפוש טקסט" />
 <section id="stations" role="main" aria-label="רשימת תחנות גפ״מ"></section>
 </main>
 
+<!-- כפתור נגישות פשוט -->
 <button id="accessibility-btn" onclick="toggleAccessibilityMenu()" style="
    position: fixed;
    bottom: 20px;
@@ -349,25 +343,17 @@ title="סינון לפי מרחק פעיל רק ללא חיפוש טקסט" />
 <a href="terms-of-use.html" style="margin: 0 10px; color: #2e7d32; text-decoration: none;">תנאי שימוש, מידע ונגישות</a>
 </footer>
 
-<div id="map-overlay">
-  <button id="close-map-btn" title="סגירת מפה">✖</button>
-  <div id="map"></div>
-</div>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
+  <!-- קבצי JavaScript מפוצלים -->
   <script src="js/constants.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/state-manager.js"></script>
   <script src="js/device-detection.js"></script>
   <script src="js/data-processing.js"></script>
-  
-  <script src="js/ui-rendering.js"></script>
   <script src="js/geolocation.js"></script>
-  
   <script src="js/pwa-install.js"></script>
+  <script src="js/ui-rendering.js"></script>
   <script src="js/main.js"></script>
   <script src="js/debug.js"></script>
-  <script src="accessibility.js"></script>
+<script src="accessibility.js"></script>
 </body>
-</html>
+</html> 

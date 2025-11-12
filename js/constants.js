@@ -1,6 +1,6 @@
 // קבועים ותצורה
 const CONFIG = {
-  GEOLOCATION_TIMEOUT: 60000, // (תיקון) ה-L תוקנה ל-l קטנה
+  GEOLOCATION_TIMEOUT: 60000,
   MAX_STATIONS_DISPLAY: 10,
   UPDATE_DISTANCE_THRESHOLD: 1,
   EARTH_RADIUS_KM: 6371,
@@ -38,22 +38,7 @@ const CONFIG = {
     ANDROID_BUTTON: "#android-install",
     PWA_BUTTON: "#pwa-install",
     OVERLAY: "#overlay",
-    INSTRUCTIONS: "#add-to-home-instructions",
-    
-    // סלקטורים למפת האוברליי
-    MAP_OVERLAY: "#map-overlay",
-    MAP_CONTAINER: "#map", 
-    OPEN_MAP_BUTTON: "#open-map-btn",
-    CLOSE_MAP_BUTTON: "#close-map-btn"
-  },
-  
-  // Map Configuration
-  MAP: {
-    DEFAULT_ZOOM: 8,
-    STATION_ZOOM: 13,
-    DEFAULT_CENTER: [31.7, 35.0], // מרכז ישראל
-    TILE_URL: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    TILE_ATTRIBUTION: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    INSTRUCTIONS: "#add-to-home-instructions"
   },
   
   // URLs
@@ -88,3 +73,5 @@ const USER_ERROR_MESSAGES = {
   2: "לא התקבלו נתוני מיקום", 
   3: "הבקשה לקבלת מיקום חרגה ממגבלת הזמן"
 };
+
+
