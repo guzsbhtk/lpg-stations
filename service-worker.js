@@ -1,25 +1,25 @@
 // Basic Service Worker for offline support and runtime caching
 const CACHE_NAME = 'lpg-stations-v19';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/manifest.json',
-  '/accessibility.js',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/maps.svg',
-  '/icons/waze.svg',
-  '/js/geolocation.js',
-  '/js/utils.js',
-  '/js/data-processing.js',
-  '/js/device-detection.js',
-  '/js/main.js',
-  '/js/pwa-install.js',
-  '/js/ui-rendering.js',
-  '/js/debug.js',
-  '/js/constants.js',
-  '/js/state-manager.js'
+  './',
+  './index.html',
+  './style.css',
+  './manifest.json',
+  './accessibility.js',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/maps.svg',
+  './icons/waze.svg',
+  './js/geolocation.js',
+  './js/utils.js',
+  './js/data-processing.js',
+  './js/device-detection.js',
+  './js/main.js',
+  './js/pwa-install.js',
+  './js/ui-rendering.js',
+  './js/debug.js',
+  './js/constants.js',
+  './js/state-manager.js'
 ];
 
 self.addEventListener('install', (event) => {
