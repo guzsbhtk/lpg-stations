@@ -127,12 +127,7 @@ function requestGeolocation(stations) {
           });
 
           // פירוט השגיאה
-          const errorDetails = {
-            1: 'PERMISSION_DENIED - המשתמש דחה את הבקשה למיקום',
-            2: 'POSITION_UNAVAILABLE - לא ניתן לקבל מיקום (אין GPS/WiFi/סלולר)',
-            3: 'TIMEOUT - הבקשה חרגה ממגבלת הזמן'
-          };
-          console.log(`📋 Error details: ${errorDetails[err.code] || 'Unknown error'}`);
+          console.log(`📋 Error details: ${GEOLOCATION_ERRORS[err.code] || 'Unknown error'}`);
 
           // (תיקון) אם המשתמש סירב, אל תנסה שוב
           if (err.code === 1) { // PERMISSION_DENIED

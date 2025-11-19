@@ -136,3 +136,8 @@ window.addEventListener('offline', function () {
 });
 
 document.addEventListener("DOMContentLoaded", init);
+
+// Service Worker Registration
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js").catch(console.error);
+}

@@ -9,16 +9,17 @@ function parseGVizResponse(text) {
 
     // שימוש ב-Regex לחילוץ הג'ייסון בצורה בטוחה יותר
     const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/);
+    let jsonStr;
     if (!jsonMatch || !jsonMatch[1]) {
-      // fallback לשיטה הישנה אם ה-Regex נכשל
-      const start = text.indexOf('{');
+      // Fallback למקרה שה-Regex לא עבד (למשל פורמט שונה)
+      const start = text.indexOf('{"');
       const end = text.lastIndexOf('}');
       if (start === -1 || end === -1) {
         throw new Error('פורמט תגובה לא תקין מהשרת');
       }
-      var jsonStr = text.substring(start, end + 1);
+      jsonStr = text.substring(start, end + 1);
     } else {
-      var jsonStr = jsonMatch[1];
+      jsonStr = jsonMatch[1];
     }
 
     const parsed = JSON.parse(jsonStr);
