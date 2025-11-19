@@ -44,19 +44,7 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  // Runtime cache for Google Sheets requests
-  if (url.host.includes('docs.google.com')) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          return response;
-        })
-        .catch(() => caches.match(request))
-    );
-    return;
-  }
+
 
   // Cache-first strategy for same-origin assets
   if (url.origin === self.location.origin) {

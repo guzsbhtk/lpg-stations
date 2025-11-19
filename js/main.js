@@ -1,46 +1,90 @@
 // קובץ ראשי - ניהול האפליקציה
 async function init() {
   console.log('🚀 init() function called');
-  
+
   // הסתר את כל כפתורי ההתקנה אם האפליקציה כבר מותקנת
   if (isStandalone()) {
     console.log('🚫 App already installed - hiding all install buttons');
     hideInstallButtons();
   }
-  
+
   appState.setLoading(true);
-  
-  let stations;
+
+  // 1. נסה לטעון מהמטמון קודם (לביצועים מהירים)
+  const cachedStations = getStationsFromCache();
+  if (cachedStations && cachedStations.length > 0) {
+    console.log(`📦 Loaded ${cachedStations.length} stations from cache`);
+    appState.setStations(cachedStations);
+    appState.setLoading(false);
+    renderStations(cachedStations, null);
+    // הפעל חיפוש מיד אם יש נתונים
+    setupControls();
+  }
+
+  // 2. טען נתונים עדכניים מהרשת
   try {
     const data = await fetchSheetData();
-    stations = parseStations(data.table);
+    const stations = parseStations(data.table);
+
     if (!stations || stations.length === 0) {
-      appState.showError(CONFIG.MESSAGES.NO_STATIONS_FOUND);
+      // אם אין נתונים חדשים אבל יש ישנים, נשאר עם הישנים
+      if (!cachedStations) {
+        appState.showError(CONFIG.MESSAGES.NO_STATIONS_FOUND);
+      }
       return;
     }
-    console.log(`נטענו ${stations.length} תחנות מהגיליון`);
+
+    console.log(`🌐 Loaded ${stations.length} stations from network`);
+
+    // שמור למטמון
+    saveStationsToCache(stations);
+
+    // עדכן את המצב והתצוגה
+    appState.setStations(stations);
+    appState.setLoading(false);
+
+    // אם כבר יש מיקום, נחשב מרחקים מחדש
+    const userPos = appState.getUserPosition();
+    if (userPos) {
+      stations.forEach(
+        (st) => (st.distance = distanceKm(userPos.lat, userPos.lng, st.lat, st.lng))
+      );
+      stations.sort((a, b) => a.distance - b.distance);
+    }
+
+    // רינדור מחדש (רק אם זה שונה או אם לא היה קאש)
+    // כרגע נרנדר תמיד כדי לוודא שהכל מעודכן
+    if (userPos) {
+      // אם יש מיקום, applyFilters כבר יטפל ברינדור
+      applyFilters();
+    } else {
+      renderStations(stations, null);
+    }
+
   } catch (err) {
-    appState.showError(`אירעה שגיאה בטעינת הנתונים: ${err.message}`);
     console.error("Error loading data:", err);
+
+    // אם אין לנו נתונים בכלל (גם לא בקאש), נציג שגיאה
+    if (!cachedStations || cachedStations.length === 0) {
+      appState.showError(`אירעה שגיאה בטעינת הנתונים: ${err.message}`);
+    } else {
+      console.log('⚠️ Network failed, but using cached data');
+      // אולי כדאי להציג אינדיקציה שהמידע לא מעודכן? כרגע נשאיר ככה
+    }
     return;
   }
 
-  // הגדרת התחנות מיד לאחר הטעינה - מאפשר חיפוש מיידי
-  appState.setStations(stations);
-  
-  // הצגת כל התחנות בהתחלה (ללא מיון לפי מרחק)
-  appState.setLoading(false);
-  renderStations(stations, null);
-  
-  // הפעלת חיפוש מיד
-  setupControls();
+  // אם לא היה קאש, עכשיו הזמן להפעיל את הפקדים
+  if (!cachedStations) {
+    setupControls();
+  }
 
   // הצגת כפתורי התקנה רק אם האפליקציה לא מותקנת
   if (!isStandalone()) {
     console.log('📱 About to call showIOSAddToHomeButton()');
     showIOSAddToHomeButton();
     showAndroidInstallButton(); // הוספת כפתור לאנדרואיד
-    
+
     // בדיקה נוספת לכפתור PWA
     const pwaInstallButton = document.getElementById('pwa-install');
     if (pwaInstallButton) {
@@ -69,13 +113,13 @@ async function init() {
 }
 
 // טיפול במצב online/offline
-window.addEventListener('online', function() {
+window.addEventListener('online', function () {
   console.log('🟢 Connection restored');
   const offlineMessage = document.getElementById('offline-message');
   if (offlineMessage) {
     offlineMessage.style.display = 'none';
   }
-  
+
   // רענון נתונים אם אין תחנות
   const stations = appState.getStations();
   if (!stations || stations.length === 0) {
@@ -83,7 +127,7 @@ window.addEventListener('online', function() {
   }
 });
 
-window.addEventListener('offline', function() {
+window.addEventListener('offline', function () {
   console.log('🔴 Connection lost');
   const offlineMessage = document.getElementById('offline-message');
   if (offlineMessage) {

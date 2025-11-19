@@ -6,20 +6,28 @@ function parseGVizResponse(text) {
     if (!text || typeof text !== 'string') {
       throw new Error('תגובה ריקה או לא תקינה מהשרת');
     }
-    
-    const start = text.indexOf('{"');
-    const end = text.lastIndexOf('}');
-    if (start === -1 || end === -1) {
-      throw new Error('פורמט תגובה לא תקין מהשרת');
+
+    // שימוש ב-Regex לחילוץ הג'ייסון בצורה בטוחה יותר
+    const jsonMatch = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/);
+    if (!jsonMatch || !jsonMatch[1]) {
+      // fallback לשיטה הישנה אם ה-Regex נכשל
+      const start = text.indexOf('{');
+      const end = text.lastIndexOf('}');
+      if (start === -1 || end === -1) {
+        throw new Error('פורמט תגובה לא תקין מהשרת');
+      }
+      var jsonStr = text.substring(start, end + 1);
+    } else {
+      var jsonStr = jsonMatch[1];
     }
-    const jsonStr = text.substring(start, end + 1);
+
     const parsed = JSON.parse(jsonStr);
-    
+
     // בדיקה שהתגובה מכילה את הנתונים הנדרשים
     if (!parsed.table || !parsed.table.cols || !parsed.table.rows) {
       throw new Error('נתונים חסרים בתגובת השרת');
     }
-    
+
     return parsed;
   } catch (err) {
     console.error('Failed to parse GViz response:', err);
@@ -57,7 +65,7 @@ function normalizeHebrewText(text) {
 function getTextMatchScore(searchTerm, targetText) {
   const normalizedSearch = normalizeHebrewText(searchTerm);
   const normalizedTarget = normalizeHebrewText(targetText);
-  
+
   // חיפוש מדויק - מכיל את המחרוזת בדיוק
   if (normalizedTarget.includes(normalizedSearch)) {
     // אם זה מתחיל בדיוק עם החיפוש - ציון גבוה יותר
@@ -66,18 +74,18 @@ function getTextMatchScore(searchTerm, targetText) {
     }
     return 90; // ציון גבוה
   }
-  
+
   // חיפוש בתחילת מילים - לדוגמה "קרית ש" ימצא "קריית שמונה"
   const targetWords = normalizedTarget.split(' ');
   const searchWords = normalizedSearch.split(' ');
-  
+
   // בדיקה אם כל מילות החיפוש מופיעות בתחילת מילים ברצף (בכל מקום בטקסט)
   for (let i = 0; i <= targetWords.length - searchWords.length; i++) {
     let allMatch = true;
     for (let j = 0; j < searchWords.length; j++) {
       const targetWord = targetWords[i + j];
       const searchWord = searchWords[j];
-      
+
       // בדיקה אם המילה מתחילה עם מילת החיפוש
       if (!targetWord.startsWith(searchWord)) {
         allMatch = false;
@@ -88,27 +96,27 @@ function getTextMatchScore(searchTerm, targetText) {
       return 80; // ציון גבוה לחיפוש בתחילת מילים
     }
   }
-  
+
   // חיפוש חלקי - בדיקה אם מילות החיפוש מופיעות בכל מקום בטקסט
-  const searchWordsFound = searchWords.every(searchWord => 
+  const searchWordsFound = searchWords.every(searchWord =>
     targetWords.some(targetWord => targetWord.startsWith(searchWord))
   );
   if (searchWordsFound) {
     return 70; // ציון בינוני לחיפוש חלקי
   }
-  
+
   // חיפוש עם סובלנות לשגיאות (Levenshtein distance)
   if (normalizedSearch.length >= CONFIG.SEARCH.MIN_LENGTH_FOR_FUZZY) {
     const fullDistance = levenshteinDistance(normalizedSearch, normalizedTarget);
-    const wordDistances = normalizedTarget.split(' ').map(word => 
+    const wordDistances = normalizedTarget.split(' ').map(word =>
       levenshteinDistance(normalizedSearch, word)
     );
     const minWordDistance = Math.min(...wordDistances);
-    
+
     // אם יש התאמה עם סובלנות לשגיאות
-    if (fullDistance <= CONFIG.SEARCH.MAX_LEVENSHTEIN_DISTANCE || 
-        minWordDistance <= CONFIG.SEARCH.MAX_LEVENSHTEIN_DISTANCE) {
-      
+    if (fullDistance <= CONFIG.SEARCH.MAX_LEVENSHTEIN_DISTANCE ||
+      minWordDistance <= CONFIG.SEARCH.MAX_LEVENSHTEIN_DISTANCE) {
+
       // חישוב ציון על בסיס המרחק - ככל שהמרחק קטן יותר, הציון גבוה יותר
       const bestDistance = Math.min(fullDistance, minWordDistance);
       const maxDistance = CONFIG.SEARCH.MAX_LEVENSHTEIN_DISTANCE;
@@ -116,7 +124,7 @@ function getTextMatchScore(searchTerm, targetText) {
       return score;
     }
   }
-  
+
   return 0; // אין התאמה
 }
 
@@ -129,31 +137,31 @@ function isTextMatch(searchTerm, targetText) {
 function debugTextMatch(searchTerm, targetText) {
   const normalizedSearch = normalizeHebrewText(searchTerm);
   const normalizedTarget = normalizeHebrewText(targetText);
-  
+
   console.log('🔍 Debug Text Match:');
   console.log('Search term:', searchTerm);
   console.log('Target text:', targetText);
   console.log('Normalized search:', normalizedSearch);
   console.log('Normalized target:', normalizedTarget);
-  
+
   const score = getTextMatchScore(searchTerm, targetText);
   console.log('Match score:', score);
-  
+
   return score;
 }
 
 // חישוב מרחק לוונשטיין (Levenshtein distance) - מספר שינויים מינימלי
 function levenshteinDistance(str1, str2) {
   const matrix = [];
-  
+
   for (let i = 0; i <= str2.length; i++) {
     matrix[i] = [i];
   }
-  
+
   for (let j = 0; j <= str1.length; j++) {
     matrix[0][j] = j;
   }
-  
+
   for (let i = 1; i <= str2.length; i++) {
     for (let j = 1; j <= str1.length; j++) {
       if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
@@ -167,7 +175,7 @@ function levenshteinDistance(str1, str2) {
       }
     }
   }
-  
+
   return matrix[str2.length][str1.length];
 }
 
@@ -180,7 +188,7 @@ function validateStation(station) {
     console.warn('Suspicious price for station:', station.name, station.price);
   }
   if (typeof station.lat !== 'number' || typeof station.lng !== 'number' ||
-      Math.abs(station.lat) > 90 || Math.abs(station.lng) > 180) {
+    Math.abs(station.lat) > 90 || Math.abs(station.lng) > 180) {
     return false;
   }
   return true;
@@ -193,10 +201,10 @@ async function fetchSheetData() {
     if (!navigator.onLine) {
       throw new Error('אין חיבור לאינטרנט - נדרש חיבור לטעינת נתונים');
     }
-    
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), CONFIG.FETCH_TIMEOUT);
-    
+
     const res = await fetch(CONFIG.URLS.SHEET, {
       signal: controller.signal,
       headers: {
@@ -204,26 +212,26 @@ async function fetchSheetData() {
         'Pragma': 'no-cache'
       }
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!res.ok) {
       throw new Error(`שגיאת שרת: ${res.status} - ${res.statusText}`);
     }
-    
+
     const text = await res.text();
     const data = parseGVizResponse(text);
     return data;
   } catch (err) {
     console.error("שגיאה בשליפת נתונים", err);
-    
+
     // טיפול מיוחד בשגיאות רשת
     if (err.name === 'AbortError') {
       throw new Error('הבקשה חרגה ממגבלת הזמן - נסה שוב');
     } else if (err.message.includes('Failed to fetch')) {
       throw new Error('בעיית חיבור לאינטרנט - בדוק את החיבור ונסה שוב');
     }
-    
+
     throw err;
   }
 }
@@ -303,4 +311,37 @@ function parseStations(table) {
       return validateStation(station) ? station : null;
     })
     .filter(Boolean);
+}
+
+// ניהול מטמון (Cache)
+const CACHE_KEY = 'lpg_stations_data';
+const CACHE_TIMESTAMP_KEY = 'lpg_stations_timestamp';
+const CACHE_VALIDITY_MS = 1000 * 60 * 60 * 24; // 24 שעות
+
+function saveStationsToCache(stations) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(stations));
+    localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+    console.log('💾 Stations saved to cache');
+  } catch (e) {
+    console.warn('Failed to save to cache:', e);
+  }
+}
+
+function getStationsFromCache() {
+  try {
+    const json = localStorage.getItem(CACHE_KEY);
+    const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+
+    if (!json || !timestamp) return null;
+
+    // בדיקת תוקף (אופציונלי - כרגע נשתמש תמיד במידע ישן אם אין אינטרנט)
+    // const age = Date.now() - parseInt(timestamp);
+    // if (age > CACHE_VALIDITY_MS) console.log('Cache is old but using it anyway');
+
+    return JSON.parse(json);
+  } catch (e) {
+    console.warn('Failed to read from cache:', e);
+    return null;
+  }
 }

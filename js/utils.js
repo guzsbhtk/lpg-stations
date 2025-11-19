@@ -3,7 +3,7 @@ function hideInstallButtons() {
   const iosButton = document.querySelector(CONFIG.SELECTORS.IOS_BUTTON);
   const androidButton = document.querySelector(CONFIG.SELECTORS.ANDROID_BUTTON);
   const pwaButton = document.querySelector(CONFIG.SELECTORS.PWA_BUTTON);
-  
+
   if (iosButton) iosButton.style.display = 'none';
   if (androidButton) androidButton.style.display = 'none';
   if (pwaButton) pwaButton.style.display = 'none';
@@ -12,9 +12,9 @@ function hideInstallButtons() {
 function showInstallButton(buttonId, hideOthers = true) {
   const button = document.querySelector(buttonId);
   if (!button) return false;
-  
+
   button.style.display = 'flex';
-  
+
   if (hideOthers) {
     const allButtons = [CONFIG.SELECTORS.IOS_BUTTON, CONFIG.SELECTORS.ANDROID_BUTTON, CONFIG.SELECTORS.PWA_BUTTON];
     allButtons.forEach(selector => {
@@ -24,7 +24,7 @@ function showInstallButton(buttonId, hideOthers = true) {
       }
     });
   }
-  
+
   return true;
 }
 
@@ -47,12 +47,23 @@ function logInstallFailure(reasons) {
 // Debounce utility – prevents excessive calls on frequent events (e.g., input)
 function debounce(func, wait) {
   let timeoutId;
-  return function() {
+  return function () {
     const context = this;
     const args = arguments;
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(function() {
+    timeoutId = setTimeout(function () {
       func.apply(context, args);
     }, wait);
   };
+}
+
+// HTML Escaping for security
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
