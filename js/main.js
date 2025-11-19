@@ -99,7 +99,7 @@ async function init() {
 
   // בקשת מיקום במקביל (לא חוסמת)
   // הפונקציה הזו תקרא ל-applyFilters() כשתסתיים, וזה יעבוד מהר
-  requestGeolocation(stations);
+  requestGeolocation(appState.getStations());
 
   // רענון מיקום אוטומטי כל דקה
   if (CONFIG.GEOLOCATION_REFRESH_MS > 0) {
