@@ -22,9 +22,9 @@ function toRad(deg) {
 // פונקציה נפרדת לבקשת מיקום שרצה במקביל
 function requestGeolocation(stations) {
   if (navigator.geolocation) {
-    // הצגת הודעה למשתמש על חיפוש המיקום
+    // הצגת הודעה למשתמש על חיפוש המיקום - רק אם אין עדיין מיקום
     const statusEl = appState.getElement('status');
-    if (statusEl) {
+    if (statusEl && !appState.getUserPosition()) {
       statusEl.innerHTML = CONFIG.MESSAGES.SEARCHING_LOCATION;
     }
 
