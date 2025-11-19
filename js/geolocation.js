@@ -8,9 +8,9 @@ function distanceKm(lat1, lon1, lat2, lon2) {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -27,7 +27,7 @@ function requestGeolocation(stations) {
     if (statusEl) {
       statusEl.innerHTML = CONFIG.MESSAGES.SEARCHING_LOCATION;
     }
-    
+
     console.log('🔍 Geolocation Debug:', {
       isDesktop: !isMobile(),
       isMobile: isMobile(),
@@ -39,36 +39,36 @@ function requestGeolocation(stations) {
       permissions: 'permissions' in navigator,
       userAgent: navigator.userAgent.substring(0, 100) + '...'
     });
-    
+
     // בדיקת הרשאות אם זמין
     if ('permissions' in navigator) {
-      navigator.permissions.query({name: 'geolocation'}).then((result) => {
+      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
         console.log('🔐 Geolocation permission state:', result.state);
       }).catch((err) => {
         console.log('🔐 Cannot check geolocation permissions:', err);
       });
     }
-    
+
     // נתחיל עם הגדרות פשוטות
     const simpleOptions = {
       enableHighAccuracy: false,
       timeout: CONFIG.GEOLOCATION_TIMEOUT / 6,
       maximumAge: 0
     };
-    
+
     const accurateOptions = {
       enableHighAccuracy: true,
       timeout: CONFIG.GEOLOCATION_TIMEOUT / 4,
       maximumAge: 0
     };
-    
+
     let attemptCount = 0;
     const maxAttempts = 3;
-    
+
     const tryGeolocation = () => {
       attemptCount++;
       console.log(`🎯 Geolocation attempt ${attemptCount}/${maxAttempts}`);
-      
+
       // בחירת אפשרויות לפי ניסיון
       let currentOptions;
       if (attemptCount === 1) {
@@ -78,9 +78,9 @@ function requestGeolocation(stations) {
       } else {
         currentOptions = { enableHighAccuracy: false, timeout: CONFIG.GEOLOCATION_TIMEOUT / 2, maximumAge: CONFIG.GEOLOCATION_MAX_AGE_LOW / 2 }; // ניסיון אחרון - סבלני
       }
-      
+
       console.log(`Using options:`, currentOptions);
-      
+
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           console.log('✅ Geolocation success!', {
@@ -97,17 +97,24 @@ function requestGeolocation(stations) {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
           };
-          // חישוב מרחקים לכל התחנות
-          stations.forEach(
-            (st) => (st.distance = distanceKm(userPos.lat, userPos.lng, st.lat, st.lng))
-          );
-          stations.sort((a, b) => a.distance - b.distance);
-          appState.setStations(stations);
+
+          // קבל את התחנות העדכניות ביותר מהמצב (למקרה שהתעדכנו בזמן שהמיקום חיפש)
+          const currentStations = appState.getStations();
+
+          if (currentStations && currentStations.length > 0) {
+            // חישוב מרחקים לכל התחנות
+            currentStations.forEach(
+              (st) => (st.distance = distanceKm(userPos.lat, userPos.lng, st.lat, st.lng))
+            );
+            currentStations.sort((a, b) => a.distance - b.distance);
+            appState.setStations(currentStations);
+          }
+
           appState.setUserPosition(userPos);
-          
+
           const statusEl = appState.getElement('status');
           if (statusEl) statusEl.textContent = "";
-          
+
           // (תיקון) רק קורא לסינון. הסינון ירוץ מהר כי המפה מוסתרת
           applyFilters();
         },
@@ -118,7 +125,7 @@ function requestGeolocation(stations) {
             timestamp: Date.now(),
             options: currentOptions
           });
-          
+
           // פירוט השגיאה
           const errorDetails = {
             1: 'PERMISSION_DENIED - המשתמש דחה את הבקשה למיקום',
@@ -126,15 +133,15 @@ function requestGeolocation(stations) {
             3: 'TIMEOUT - הבקשה חרגה ממגבלת הזמן'
           };
           console.log(`📋 Error details: ${errorDetails[err.code] || 'Unknown error'}`);
-          
+
           // (תיקון) אם המשתמש סירב, אל תנסה שוב
           if (err.code === 1) { // PERMISSION_DENIED
-             console.log('🚫 User denied permission. Stopping geolocation attempts.');
-             appState.showError(`${geoErrorText(err.code)} – מציג רשימה מלאה`);
-             applyFilters(); // הפעל סינון ללא מיקום
-             return; // עצור ריצה
+            console.log('🚫 User denied permission. Stopping geolocation attempts.');
+            appState.showError(`${geoErrorText(err.code)} – מציג רשימה מלאה`);
+            applyFilters(); // הפעל סינון ללא מיקום
+            return; // עצור ריצה
           }
-          
+
           if (attemptCount < maxAttempts) {
             console.log(`⏳ Trying again in ${CONFIG.GEOLOCATION_RETRY_DELAY}ms...`);
             setTimeout(tryGeolocation, CONFIG.GEOLOCATION_RETRY_DELAY);
@@ -149,7 +156,7 @@ function requestGeolocation(stations) {
         currentOptions
       );
     };
-    
+
     // התחלת הניסיונות
     tryGeolocation();
   } else {
