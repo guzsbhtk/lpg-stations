@@ -1,5 +1,5 @@
 // תוסף נגישות מתקדם
-function initAccessibility() {
+document.addEventListener('DOMContentLoaded', function () {
   // טעינת הגדרות נגישות מ-localStorage
   loadAccessibilitySettings();
 
@@ -261,12 +261,4 @@ function initAccessibility() {
   // הוספת הפונקציות לחלון הגלובלי
   window.saveAccessibilitySettings = saveAccessibilitySettings;
   window.loadAccessibilitySettings = loadAccessibilitySettings;
-}
-
-// הרץ את הקוד מיד אם ה-DOM כבר נטען, אחרת חכה ל-DOMContentLoaded
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initAccessibility);
-} else {
-  // DOM כבר נטען, הרץ מיד
-  initAccessibility();
-} 
+}); 
