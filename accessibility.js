@@ -1,8 +1,8 @@
 // תוסף נגישות מתקדם
-document.addEventListener('DOMContentLoaded', function() {
+function initAccessibility() {
   // טעינת הגדרות נגישות מ-localStorage
   loadAccessibilitySettings();
-  
+
   // יצירת תפריט נגישות
   var menu = document.createElement('div');
   menu.id = 'accessibility-menu';
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     min-width: 250px;
     direction: rtl;
   `;
-  
+
   menu.innerHTML = `
     <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #2e7d32; text-align: center;">הגדרות נגישות</h3>
     <button onclick="increaseText()" style="display: block; width: 100%; margin: 8px 0; padding: 12px; border: 1px solid #ddd; background: #f9f9f9; cursor: pointer; border-radius: 8px; font-size: 14px;">הגדלת טקסט</button>
@@ -29,53 +29,53 @@ document.addEventListener('DOMContentLoaded', function() {
     <button id="spacing-btn" onclick="toggleSpacing()" style="display: block; width: 100%; margin: 8px 0; padding: 12px; border: 1px solid #ddd; background: #f9f9f9; cursor: pointer; border-radius: 8px; font-size: 14px;">הגדלת רווחים</button>
     <button onclick="resetAccessibility()" style="display: block; width: 100%; margin: 8px 0; padding: 12px; border: 1px solid #f44336; background: #f44336; color: white; cursor: pointer; border-radius: 8px; font-size: 14px;">איפוס הגדרות</button>
   `;
-  
+
   // הוספה לדף
   document.body.appendChild(menu);
-  
+
   // פונקציות נגישות
-  window.increaseText = function() {
+  window.increaseText = function () {
     var currentSize = parseFloat(getComputedStyle(document.body).fontSize);
     var newSize = currentSize + 2;
     document.body.style.fontSize = newSize + 'px';
-    
+
     // הגדלת טקסט לכל האלמנטים - כולל כאלה ללא fontSize מוגדר
     var elements = document.querySelectorAll('h1, h2, h3, p, span, div, button, input, select, label, li, a');
-    elements.forEach(function(el) {
+    elements.forEach(function (el) {
       var currentElSize = parseFloat(getComputedStyle(el).fontSize);
       el.style.fontSize = (currentElSize + 2) + 'px';
     });
-    
+
     // שמירת הגדרות
     saveAccessibilitySettings();
-    
+
     console.log('טקסט הוגדל');
   };
-  
-  window.decreaseText = function() {
+
+  window.decreaseText = function () {
     var currentSize = parseFloat(getComputedStyle(document.body).fontSize);
     var newSize = currentSize - 2;
     document.body.style.fontSize = newSize + 'px';
-    
+
     // הקטנת טקסט לכל האלמנטים - כולל כאלה ללא fontSize מוגדר
     var elements = document.querySelectorAll('h1, h2, h3, p, span, div, button, input, select, label, li, a');
-    elements.forEach(function(el) {
+    elements.forEach(function (el) {
       var currentElSize = parseFloat(getComputedStyle(el).fontSize);
       el.style.fontSize = (currentElSize - 2) + 'px';
     });
-    
+
     // שמירת הגדרות
     saveAccessibilitySettings();
-    
+
     console.log('טקסט הוקטן');
   };
-  
-  window.toggleHighContrast = function() {
+
+  window.toggleHighContrast = function () {
     var contrastBtn = document.getElementById('contrast-btn');
     var isHighContrast = document.body.classList.contains('high-contrast');
-    
+
     document.body.classList.toggle('high-contrast');
-    
+
     if (isHighContrast) {
       contrastBtn.textContent = 'ניגודיות גבוהה';
       console.log('ניגודיות רגילה');
@@ -83,17 +83,17 @@ document.addEventListener('DOMContentLoaded', function() {
       contrastBtn.textContent = 'ניגודיות רגילה';
       console.log('ניגודיות גבוהה');
     }
-    
+
     // שמירת הגדרות
     saveAccessibilitySettings();
   };
-  
-  window.toggleSpacing = function() {
+
+  window.toggleSpacing = function () {
     var spacingBtn = document.getElementById('spacing-btn');
     var isSpacingActive = document.body.classList.contains('increased-spacing');
-    
+
     document.body.classList.toggle('increased-spacing');
-    
+
     if (isSpacingActive) {
       spacingBtn.textContent = 'הגדלת רווחים';
       console.log('רווחים הוקטנו');
@@ -101,67 +101,67 @@ document.addEventListener('DOMContentLoaded', function() {
       spacingBtn.textContent = 'הקטנת רווחים';
       console.log('רווחים הורחבו');
     }
-    
+
     // שמירת הגדרות
     saveAccessibilitySettings();
   };
-  
-  window.resetAccessibility = function() {
+
+  window.resetAccessibility = function () {
     document.body.style.fontSize = '';
     document.body.classList.remove('high-contrast', 'increased-spacing');
-    
+
     // איפוס גודל טקסט לכל האלמנטים - כולל כאלה ללא fontSize מוגדר
     var elements = document.querySelectorAll('h1, h2, h3, p, span, div, button, input, select, label, li, a');
-    elements.forEach(function(el) {
+    elements.forEach(function (el) {
       el.style.fontSize = '';
     });
-    
+
     // איפוס טקסט כפתור הרווחים
     var spacingBtn = document.getElementById('spacing-btn');
     if (spacingBtn) {
       spacingBtn.textContent = 'הגדלת רווחים';
     }
-    
+
     // איפוס טקסט כפתור הניגודיות
     var contrastBtn = document.getElementById('contrast-btn');
     if (contrastBtn) {
       contrastBtn.textContent = 'ניגודיות גבוהה';
     }
-    
+
     // מחיקת הגדרות מ-localStorage
     localStorage.removeItem('accessibilitySettings');
-    
+
     console.log('הגדרות אופסו');
   };
-  
+
   // פתיחה/סגירה של התפריט
-  window.toggleAccessibilityMenu = function() {
+  window.toggleAccessibilityMenu = function () {
     var menu = document.getElementById('accessibility-menu');
     if (menu) {
       menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
       console.log('תפריט נגישות:', menu.style.display);
     }
   };
-  
+
   // סגירת התפריט בלחיצה מחוץ לו
-  document.addEventListener('click', function(e) {
+  document.addEventListener('click', function (e) {
     var menu = document.getElementById('accessibility-menu');
     var accessibilityBtn = document.getElementById('accessibility-btn');
     if (menu && accessibilityBtn && !menu.contains(e.target) && !accessibilityBtn.contains(e.target)) {
       menu.style.display = 'none';
     }
   });
-  
+
   // קיצורי מקלדת
-  document.addEventListener('keydown', function(e) {
+  document.addEventListener('keydown', function (e) {
     // Esc לסגירת התפריט
     if (e.key === 'Escape' && menu.style.display === 'block') {
       menu.style.display = 'none';
     }
-    
+
     // קיצורי מקלדת לנגישות
     if (e.ctrlKey || e.metaKey) {
-      switch(e.key) {
+      switch (e.key) {
         case '=':
         case '+':
           e.preventDefault();
@@ -178,15 +178,15 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   });
-  
+
   // ניווט במקלדת - דילוג על אלמנטים נסתרים
-  document.addEventListener('keydown', function(e) {
+  document.addEventListener('keydown', function (e) {
     if (e.key === 'Tab') {
       var focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
       var elements = document.querySelectorAll(focusableElements);
       var firstElement = elements[0];
       var lastElement = elements[elements.length - 1];
-      
+
       if (e.shiftKey) {
         if (document.activeElement === firstElement) {
           e.preventDefault();
@@ -200,9 +200,9 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
   });
-  
+
   console.log('תוסף נגישות נטען בהצלחה');
-  
+
   // פונקציות לשמירה וטעינה של הגדרות נגישות
   function saveAccessibilitySettings() {
     var settings = {
@@ -213,20 +213,20 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.setItem('accessibilitySettings', JSON.stringify(settings));
     console.log('הגדרות נגישות נשמרו:', settings);
   }
-  
+
   function loadAccessibilitySettings() {
     try {
       var savedSettings = localStorage.getItem('accessibilitySettings');
       if (savedSettings) {
         var settings = JSON.parse(savedSettings);
         console.log('טוען הגדרות נגישות:', settings);
-        
+
         // הפעלת הגדלת טקסט
         if (settings.fontSize) {
           document.body.style.fontSize = settings.fontSize;
           // הפעלת הגדלת טקסט על אלמנטים ספציפיים
           var elements = document.querySelectorAll('h1, h2, h3, p, span, div, button, input, select, label, li, a');
-          elements.forEach(function(el) {
+          elements.forEach(function (el) {
             var currentElSize = parseFloat(getComputedStyle(el).fontSize);
             var bodySize = parseFloat(settings.fontSize);
             if (bodySize > 16) { // אם הטקסט הוגדל
@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           });
         }
-        
+
         // הפעלת ניגודיות גבוהה
         if (settings.highContrast) {
           document.body.classList.add('high-contrast');
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
             contrastBtn.textContent = 'ניגודיות רגילה';
           }
         }
-        
+
         // הפעלת הגדלת רווחים
         if (settings.increasedSpacing) {
           document.body.classList.add('increased-spacing');
@@ -257,8 +257,16 @@ document.addEventListener('DOMContentLoaded', function() {
       console.error('שגיאה בטעינת הגדרות נגישות:', error);
     }
   }
-  
+
   // הוספת הפונקציות לחלון הגלובלי
   window.saveAccessibilitySettings = saveAccessibilitySettings;
   window.loadAccessibilitySettings = loadAccessibilitySettings;
-}); 
+}
+
+// הרץ את הקוד מיד אם ה-DOM כבר נטען, אחרת חכה ל-DOMContentLoaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAccessibility);
+} else {
+  // DOM כבר נטען, הרץ מיד
+  initAccessibility();
+} 
