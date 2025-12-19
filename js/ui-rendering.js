@@ -153,7 +153,7 @@ function updateMapMarkers(stationsToShow, userPos) {
 
       const isCurrentMonth = st.date && isUpdatedThisMonth(st.date);
       const dateDisplay = isCurrentMonth 
-        ? `<p class="date date-current-month">✅ עודכן החודש!</p>`
+        ? `<p class="date date-current-month">✅ עודכן החודש</p>`
         : st.date ? `<p class="date">🕒 עודכן: ${escapeHTML(st.date)}</p>` : '';
       
       const popupContent = `
@@ -270,7 +270,7 @@ function renderStations(stations, userPos) {
       const dateSpan = document.createElement("span");
       const isCurrentMonth = isUpdatedThisMonth(st.date);
       dateSpan.className = isCurrentMonth ? "date date-current-month" : "date";
-      dateSpan.textContent = isCurrentMonth ? `  עודכן החודש!` : `  עודכן: ${st.date}`;
+      dateSpan.textContent = isCurrentMonth ? `  עודכן החודש` : `  עודכן: ${st.date}`;
       priceEl.appendChild(dateSpan);
     }
 
