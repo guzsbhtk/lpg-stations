@@ -1,5 +1,23 @@
 // רינדור ממשק משתמש
 
+// בודק אם תאריך עודכן החודש הנוכחי
+function isUpdatedThisMonth(dateStr) {
+  if (!dateStr) return false;
+  
+  // הפורמט הוא MM.YY (למשל "12.25")
+  const parts = dateStr.split('.');
+  if (parts.length !== 2) return false;
+  
+  const month = parseInt(parts[0], 10);
+  const year = parseInt(parts[1], 10);
+  
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1; // 1-12
+  const currentYear = now.getFullYear() % 100; // רק 2 ספרות אחרונות
+  
+  return month === currentMonth && year === currentYear;
+}
+
 // פתיחת שכבת-על של המפה
 function openMap() {
   const overlay = appState.getElement('mapOverlay');
@@ -133,11 +151,16 @@ function updateMapMarkers(stationsToShow, userPos) {
         ? `<p class="distance">📏 ${st.distance.toFixed(1)} ק"מ ממיקומך</p>`
         : '';
 
+      const isCurrentMonth = st.date && isUpdatedThisMonth(st.date);
+      const dateDisplay = isCurrentMonth 
+        ? `<p class="date date-current-month">✅ עודכן החודש!</p>`
+        : st.date ? `<p class="date">🕒 עודכן: ${escapeHTML(st.date)}</p>` : '';
+      
       const popupContent = `
         <h3>${escapeHTML(st.name)}</h3>
         <p>${escapeHTML(st.city || '')}</p>
         <p class="price">₪${escapeHTML(st.price)}</p>
-        ${st.date ? `<p class="date">🕒 עודכן: ${escapeHTML(st.date)}</p>` : ''}
+        ${dateDisplay}
         ${distanceText}
         <a href="https://waze.com/ul?ll=${st.lat}%2C${st.lng}&navigate=yes" target="_blank" rel="noopener noreferrer">🚗 נווט עם Waze</a>
       `;
@@ -245,8 +268,9 @@ function renderStations(stations, userPos) {
 
     if (st.date) {
       const dateSpan = document.createElement("span");
-      dateSpan.className = "date";
-      dateSpan.textContent = `  עודכן: ${st.date}`;
+      const isCurrentMonth = isUpdatedThisMonth(st.date);
+      dateSpan.className = isCurrentMonth ? "date date-current-month" : "date";
+      dateSpan.textContent = isCurrentMonth ? `  עודכן החודש!` : `  עודכן: ${st.date}`;
       priceEl.appendChild(dateSpan);
     }
 

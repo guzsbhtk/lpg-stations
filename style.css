@@ -337,6 +337,11 @@ main {
   color: #777;
 }
 
+.leaflet-popup-content .date-current-month {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
 .leaflet-popup-content a {
   display: block;
   margin-top: 8px;
@@ -371,36 +376,37 @@ body.high-contrast .map-button {
   border: 1px solid #fff !important;
 }
 
-/* (חדש) ניגודיות גבוהה למפה */
+/* (חדש) ניגודיות גבוהה למפה - ביטול מצב ניגודיות במפה */
+/* המפה תישאר תמיד בצבעים רגילים כדי להישאר קריאה ושמישה */
 body.high-contrast #map-overlay {
-  background: #000 !important;
+  background: #fff !important;
 }
-body.high-contrast #map-overlay.map-overlay-open {
-  background: #000 !important;
-}
-body.high-contrast #map-overlay.map-overlay-open #map {
-  height: 100vh !important;
-  width: 100vw !important;
-}
+
 body.high-contrast #close-map-btn {
   background: #222 !important;
   color: #fff !important;
   border-color: #fff !important;
 }
+
+/* האריחים של המפה נשארים רגילים - ללא פילטרים */
 body.high-contrast .leaflet-tile {
-  filter: grayscale(100%) contrast(150%);
+  filter: none !important;
 }
 
+/* ה-popup במפה נשאר בצבעים רגילים */
 body.high-contrast .leaflet-popup-content-wrapper,
 body.high-contrast .leaflet-popup-tip {
-  background: #111 !important;
-  color: #fff !important;
+  background: #fff !important;
+  color: #333 !important;
 }
 
 body.high-contrast .leaflet-popup-content h3,
-body.high-contrast .leaflet-popup-content p,
+body.high-contrast .leaflet-popup-content p {
+  color: #333 !important;
+}
+
 body.high-contrast .leaflet-popup-content a {
-  color: #fff !important;
+  color: #2e7d32 !important;
 }
 
 
@@ -456,6 +462,11 @@ body.increased-spacing .station .actions a {
   font-size: 0.8rem;
   color: #777;
   margin-bottom: 0.5rem;
+}
+
+.station .date-current-month {
+  color: #2e7d32;
+  font-weight: 600;
 }
 
 .station .actions a {
