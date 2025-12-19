@@ -27,6 +27,16 @@ function openMap() {
     return;
   }
 
+  // ניגודיות גבוהה משתמשת בכלל CSS גורף (.high-contrast *), שעלול להשחיר את המפה
+  // לכן בזמן שהמפה פתוחה – משביתים זמנית ניגודיות גבוהה, ומשחזרים בסגירה.
+  const wasHighContrast = document.body.classList.contains('high-contrast');
+  if (wasHighContrast) {
+    document.body.dataset.hcDisabledForMap = '1';
+    document.body.classList.remove('high-contrast');
+  } else {
+    delete document.body.dataset.hcDisabledForMap;
+  }
+
   // הוסף classes לגוף
   document.documentElement.classList.add('map-is-open');
   document.body.classList.add('map-is-open');
@@ -128,6 +138,12 @@ function closeMap() {
 
   document.documentElement.classList.remove('map-is-open');
   document.body.classList.remove('map-is-open');
+
+  // שחזור ניגודיות גבוהה אם הושבתה זמנית עבור המפה
+  if (document.body.dataset.hcDisabledForMap === '1') {
+    document.body.classList.add('high-contrast');
+    delete document.body.dataset.hcDisabledForMap;
+  }
 }
 
 // (חדש) עדכון הסמנים במפה
@@ -153,7 +169,7 @@ function updateMapMarkers(stationsToShow, userPos) {
 
       const isCurrentMonth = st.date && isUpdatedThisMonth(st.date);
       const dateDisplay = isCurrentMonth 
-        ? `<p class="date date-current-month">✅ עודכן החודש</p>`
+        ? `<p class="date date-current-month">✅ עודכן החודש!</p>`
         : st.date ? `<p class="date">🕒 עודכן: ${escapeHTML(st.date)}</p>` : '';
       
       const popupContent = `
