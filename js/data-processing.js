@@ -247,6 +247,7 @@ function parseStations(table) {
   const idxName = findIdx(["שם", "תחנה"]);
   const idxPrice = findIdx(["מחיר"]);
   const idxDate = findIdx(["תאריך", "מעודכן"]);
+  const idxEstimatedPrice = findIdx(["משוער", "מחיר משוער"]);
   const idxCityCandidates = ["ישוב", "יישוב", "עיר"];
   let idxCity = findIdx(idxCityCandidates);
   if (idxCity === -1 && cols.length > 1) {
@@ -303,12 +304,13 @@ function parseStations(table) {
       const city = idxCity !== -1 ? cells[idxCity]?.v : "";
       const coordsStr = cells[idxCoords]?.v;
       const date = idxDate !== -1 ? formatDateCell(cells[idxDate]) : "";
+      const estimatedPrice = idxEstimatedPrice !== -1 ? cells[idxEstimatedPrice]?.v : null;
       if (!name || !price || !coordsStr) return null;
       const [lat, lng] = coordsStr.split(/,\s*/).map(Number);
       if (isNaN(lat) || isNaN(lng)) return null;
       const rowNumber = idx + 2; // שורה בפועל בגיליון (כולל כותרת)
       const rowCode = `${rowNumber}${rowNumber * rowNumber}`; // שרשור n ו-n^2
-      const station = { name, city, price, date, lat, lng, rowNumber, rowCode };
+      const station = { name, city, price, date, lat, lng, rowNumber, rowCode, estimatedPrice };
       return validateStation(station) ? station : null;
     })
     .filter(Boolean);

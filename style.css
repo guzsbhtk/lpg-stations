@@ -342,6 +342,22 @@ main {
   font-weight: 600;
 }
 
+.leaflet-popup-content .estimated-price {
+  color: #f57c00;
+}
+
+.leaflet-popup-content .estimated-label {
+  color: #f57c00;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.leaflet-popup-content .old-price-info {
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 0.25rem;
+}
+
 .leaflet-popup-content a {
   display: block;
   margin-top: 8px;
@@ -467,6 +483,39 @@ body.increased-spacing .station .actions a {
 .station .date-current-month {
   color: #2e7d32;
   font-weight: 600;
+}
+
+/* מחיר משוער */
+.station .estimated-price {
+  position: relative;
+  cursor: help;
+}
+
+.station .estimated-label {
+  color: #f57c00;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.station .old-price-tooltip {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  z-index: 1000;
+  margin-top: 0.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.station .estimated-price:hover .old-price-tooltip,
+.station .estimated-price.show-old-price .old-price-tooltip {
+  display: block;
 }
 
 .station .actions a {
