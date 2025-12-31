@@ -63,6 +63,12 @@ const CONFIG = {
     PLAY_STORE: "https://play.google.com/store/apps/details?id=io.github.guzsbhtk.twa"
   },
   
+  // Form Entry IDs (מזהי שדות בטופס Google Forms)
+  FORM_ENTRIES: {
+    STATION_ID: "1345625893",  // שדה מזהה התחנה (rowCode)
+    PRICE: "386668135"  // שדה המחיר בטופס
+  },
+  
   // Messages
   MESSAGES: {
     NO_STATIONS: "אין תחנות להצגה",

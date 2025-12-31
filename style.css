@@ -352,6 +352,10 @@ main {
   font-size: 0.8rem;
 }
 
+.leaflet-popup-content .estimated-label .info-icon {
+  font-size: 0.75rem;
+}
+
 .leaflet-popup-content .old-price-info {
   font-size: 0.75rem;
   color: #999;
@@ -497,6 +501,21 @@ body.increased-spacing .station .actions a {
   font-size: 0.8rem;
 }
 
+.station .estimated-label .tooltip-trigger {
+  border-bottom: 1.5px dotted #f57c00;
+  cursor: help;
+  transition: border-bottom-style 0.2s ease;
+}
+
+.station .estimated-label .tooltip-trigger:hover {
+  border-bottom-style: solid;
+}
+
+.station .estimated-label .info-icon {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
 .station .old-price-tooltip {
   display: none;
   position: absolute;
@@ -511,6 +530,18 @@ body.increased-spacing .station .actions a {
   z-index: 1000;
   margin-top: 0.25rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: tooltipFadeIn 0.2s ease-out;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .station .estimated-price:hover .old-price-tooltip,
@@ -552,6 +583,11 @@ a.waze .icon {
 
 .station .actions a.update {
   background: #8e24aa;
+}
+
+.station .actions a.confirm-price {
+  background: #2e7d32;
+  font-weight: 600;
 }
 
 .station .actions {

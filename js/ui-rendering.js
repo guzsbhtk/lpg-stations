@@ -175,7 +175,7 @@ function updateMapMarkers(stationsToShow, userPos) {
       
       if (shouldShowEstimated) {
         priceDisplay = `<p class="price estimated-price">₪${escapeHTML(st.estimatedPrice)}</p>`;
-        dateDisplay = `<p class="date estimated-label">💡 מחיר משוער</p>` +
+        dateDisplay = `<p class="date estimated-label">💡 מחיר משוער <span class="info-icon">ℹ️</span></p>` +
           (st.date ? `<p class="date old-price-info">מחיר ישן: ₪${escapeHTML(st.price)} (${escapeHTML(st.date)})</p>` : '');
       } else {
         priceDisplay = `<p class="price">₪${escapeHTML(st.price)}</p>`;
@@ -306,7 +306,7 @@ function renderStations(stations, userPos) {
       
       const estimatedLabel = document.createElement("span");
       estimatedLabel.className = "date estimated-label";
-      estimatedLabel.textContent = "  מחיר משוער";
+      estimatedLabel.innerHTML = '  <span class="tooltip-trigger">מחיר משוער <span class="info-icon">ℹ️</span></span>';
       priceEl.appendChild(estimatedLabel);
       
       // הוסף div נסתר עם המחיר הישן
@@ -356,6 +356,11 @@ function renderStations(stations, userPos) {
     actions.appendChild(mapsLink);
 
     if (st.distance !== undefined && st.distance <= CONFIG.UPDATE_DISTANCE_THRESHOLD) {
+      const isCurrentMonth = st.date && isUpdatedThisMonth(st.date);
+      const hasEstimatedPrice = st.estimatedPrice && typeof st.estimatedPrice === 'number';
+      const shouldShowEstimated = !isCurrentMonth && hasEstimatedPrice;
+      
+      // כפתור "עדכן מחיר" רגיל
       const updateLink = document.createElement("a");
       updateLink.className = "update";
       updateLink.href = UPDATE_FORM_BASE + st.rowCode + daySuffix;
@@ -363,6 +368,19 @@ function renderStations(stations, userPos) {
       updateLink.rel = "noopener noreferrer";
       updateLink.textContent = "עדכן מחיר";
       actions.appendChild(updateLink);
+      
+      // כפתור "אשר מחיר" אם יש מחיר משוער
+      if (shouldShowEstimated && CONFIG.FORM_ENTRIES && CONFIG.FORM_ENTRIES.PRICE) {
+        const confirmLink = document.createElement("a");
+        confirmLink.className = "confirm-price";
+        // מוסיף את המחיר המשוער כפרמטר נוסף ב-URL
+        confirmLink.href = UPDATE_FORM_BASE + st.rowCode + daySuffix + `&entry.${CONFIG.FORM_ENTRIES.PRICE}=${st.estimatedPrice}`;
+        confirmLink.target = "_blank";
+        confirmLink.rel = "noopener noreferrer";
+        confirmLink.textContent = "אשר מחיר";
+        confirmLink.title = `אשר מחיר משוער: ₪${st.estimatedPrice}`;
+        actions.appendChild(confirmLink);
+      }
     }
 
     div.appendChild(actions);
