@@ -175,12 +175,12 @@ function updateMapMarkers(stationsToShow, userPos) {
       
       if (shouldShowEstimated) {
         priceDisplay = `<p class="price estimated-price">₪${escapeHTML(st.estimatedPrice)}</p>`;
-        dateDisplay = `<p class="date estimated-label">💡 מחיר משוער <span class="info-icon">ℹ️</span></p>` +
+        dateDisplay = `<p class="date estimated-label">💡 מחיר משוער</p>` +
           (st.date ? `<p class="date old-price-info">מחיר ישן: ₪${escapeHTML(st.price)} (${escapeHTML(st.date)})</p>` : '');
       } else {
         priceDisplay = `<p class="price">₪${escapeHTML(st.price)}</p>`;
         dateDisplay = isCurrentMonth 
-          ? `<p class="date date-current-month">✅ עודכן החודש!</p>`
+          ? `<p class="date date-current-month">✅ עודכן החודש</p>`
           : st.date ? `<p class="date">🕒 עודכן: ${escapeHTML(st.date)}</p>` : '';
       }
       
@@ -306,7 +306,7 @@ function renderStations(stations, userPos) {
       
       const estimatedLabel = document.createElement("span");
       estimatedLabel.className = "date estimated-label";
-      estimatedLabel.innerHTML = '  <span class="tooltip-trigger">מחיר משוער <span class="info-icon">ℹ️</span></span>';
+      estimatedLabel.innerHTML = '  <span class="tooltip-trigger">מחיר משוער</span>';
       priceEl.appendChild(estimatedLabel);
       
       // הוסף div נסתר עם המחיר הישן

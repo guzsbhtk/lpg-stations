@@ -352,10 +352,6 @@ main {
   font-size: 0.8rem;
 }
 
-.leaflet-popup-content .estimated-label .info-icon {
-  font-size: 0.75rem;
-}
-
 .leaflet-popup-content .old-price-info {
   font-size: 0.75rem;
   color: #999;
@@ -509,11 +505,6 @@ body.increased-spacing .station .actions a {
 
 .station .estimated-label .tooltip-trigger:hover {
   border-bottom-style: solid;
-}
-
-.station .estimated-label .info-icon {
-  font-size: 0.75rem;
-  opacity: 0.8;
 }
 
 .station .old-price-tooltip {
