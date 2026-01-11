@@ -8,7 +8,7 @@ async function isAppInstalled() {
     console.log('✅ App installed - running in standalone mode');
     return true;
   }
-  
+
   // 2. בדיקה אם המשתמש כבר התקין בעבר (localStorage)
   try {
     const installedFlag = localStorage.getItem('app-installed');
@@ -19,7 +19,7 @@ async function isAppInstalled() {
   } catch (e) {
     console.log('localStorage check failed:', e);
   }
-  
+
   // 3. שימוש ב-getInstalledRelatedApps API (Chrome Android)
   if ('getInstalledRelatedApps' in navigator) {
     try {
@@ -29,7 +29,7 @@ async function isAppInstalled() {
         // שמירה ב-localStorage למהירות בפעמים הבאות
         try {
           localStorage.setItem('app-installed', 'true');
-        } catch (e) {}
+        } catch (e) { }
         console.log('✅ App installed - found via getInstalledRelatedApps');
         return true;
       }
@@ -37,7 +37,7 @@ async function isAppInstalled() {
       console.log('getInstalledRelatedApps check failed:', error);
     }
   }
-  
+
   console.log('❌ App not installed');
   return false;
 }
@@ -49,7 +49,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   // שומר את האירוע לשימוש מאוחר יותר
   deferredPrompt = e;
-  
+
   // הצג כפתור התקנה מותאם אישית
   showPWAInstallButton();
 });
@@ -68,28 +68,32 @@ window.addEventListener('appinstalled', (e) => {
 });
 
 async function showPWAInstallButton() {
-  // בדיקה מוקדמת - אם האפליקציה מותקנת, אל תציג שום כפתור
+  // בדיקה אם יש דגל שמחייב הצגה (כמו בעמוד התקנה ייעודי)
+  const forceInstall = document.body.getAttribute('data-force-install') === 'true';
+
+  // בדיקה מוקדמת - אם האפליקציה מותקנת, אל תציג שום כפתור (אלא אם מכריחים)
   const appInstalled = await isAppInstalled();
-  if (appInstalled) {
+  if (appInstalled && !forceInstall) {
     console.log('🚫 PWA Install Button - App already installed, skipping');
     return;
   }
-  
-  // באנדרואיד עם שירותי גוגל: הבדיקה בוטלה לבקשת המשתמש כדי לאפשר התקנת PWA ישירה
-  // if (isAndroid() && hasGooglePlayServices()) {
-  //   const pwaInstallButton = document.getElementById('pwa-install');
-  //   if (pwaInstallButton) {
-  //     pwaInstallButton.style.display = 'none';
-  //   }
-  //   console.log('🚫 PWA Install Button hidden on Android with Google Play Services (preferring native app download)');
-  //   return;
-  // }
-  
+
+  // באנדרואיד עם שירותי גוגל: אל תציג כפתור PWA אם יש כפתור לחנות
+  const androidStoreButton = document.getElementById('android-install');
+  if (isAndroid() && hasGooglePlayServices() && androidStoreButton) {
+    const pwaInstallButton = document.getElementById('pwa-install');
+    if (pwaInstallButton) {
+      pwaInstallButton.style.display = 'none';
+    }
+    console.log('🚫 PWA Install Button hidden on Android with Google Play Services (preferring native app download)');
+    return;
+  }
+
   const pwaInstallButton = document.getElementById('pwa-install');
-  
+
   // בדיקה אם האפליקציה כבר מותקנת
   const isAlreadyInstalled = isStandalone();
-  
+
   // באנדרואיד - הצג PWA רק אם כפתור החנות לא מוצג
   if (isAndroid() && isMobile()) {
     const androidInstallButton = document.getElementById('android-install');
@@ -107,9 +111,9 @@ async function showPWAInstallButton() {
     standalone: window.navigator.standalone,
     userAgent: window.navigator.userAgent
   });
-  
-  // הצג את הכפתור רק אם זה מכשיר נייד, יש PWA prompt והאפליקציה לא מותקנת
-  if (pwaInstallButton && isMobile() && deferredPrompt && !isAlreadyInstalled) {
+
+  // הצג את הכפתור רק אם זה מכשיר נייד, יש PWA prompt והאפליקציה לא מותקנת (או שמכריחים)
+  if (pwaInstallButton && isMobile() && deferredPrompt && (!isAlreadyInstalled || forceInstall)) {
     pwaInstallButton.style.display = 'flex';
     console.log('✅ PWA Install Button should be visible now');
   } else {
@@ -125,7 +129,7 @@ function installPWA() {
   if (deferredPrompt) {
     console.log('Installing PWA...');
     deferredPrompt.prompt();
-    
+
     deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
         console.log('PWA installed successfully');
@@ -154,17 +158,17 @@ async function showIOSAddToHomeButton() {
   } catch (e) {
     console.log('Failed to check hide-ios-button flag:', e);
   }
-  
+
   // בדיקה מוקדמת - אם האפליקציה מותקנת, אל תציג שום כפתור
   const appInstalled = await isAppInstalled();
   if (appInstalled) {
     console.log('🚫 iOS Add to Home Button - App already installed, skipping');
     return;
   }
-  
+
   const addToHomeButton = document.querySelector(CONFIG.SELECTORS.IOS_BUTTON);
   const androidInstallButton = document.querySelector(CONFIG.SELECTORS.ANDROID_BUTTON);
-  
+
   // דיבוג - הדפסת מידע לקונסול
   logInstallDebug('iOS Add to Home', {
     'User Agent': navigator.userAgent,
@@ -173,7 +177,7 @@ async function showIOSAddToHomeButton() {
     'isStandalone()': isStandalone(),
     'Button element found': !!addToHomeButton
   });
-  
+
   // בדיקה אם הכפתור קיים ב-DOM
   if (!addToHomeButton) {
     console.log('🔍 Searching for button in DOM...');
@@ -183,14 +187,14 @@ async function showIOSAddToHomeButton() {
       console.log(`Button ${index}:`, btn.id, btn.className, btn.textContent);
     });
   }
-  
+
   // הצג את הכפתור רק אם זה מכשיר נייד, iOS ולא standalone
   const shouldShow = addToHomeButton && isMobile() && isIOS() && !isStandalone();
-  
+
   if (shouldShow) {
     showInstallButton('#ios-add-to-home');
     console.log('✅ iOS Button should be visible now');
-    
+
     // בדיקה נוספת - וודא שהכפתור באמת נראה
     setTimeout(() => {
       const computedStyle = window.getComputedStyle(addToHomeButton);
@@ -217,7 +221,7 @@ async function showAndroidInstallButton() {
     console.log('🚫 Android Install Button - App already installed, skipping');
     return;
   }
-  
+
   const androidInstallButton = document.querySelector(CONFIG.SELECTORS.ANDROID_BUTTON);
   const addToHomeButton = document.querySelector(CONFIG.SELECTORS.IOS_BUTTON);
 
@@ -229,7 +233,7 @@ async function showAndroidInstallButton() {
     'isStandalone()': isStandalone(),
     'Android button found': !!androidInstallButton
   });
-  
+
   // קדימות לחנות: אם אפשר להציג כפתור חנות - הסתר את כפתור ה-PWA
   const shouldShow = androidInstallButton && isMobile() && isAndroid() && hasGooglePlayServices() && !isAndroidAppInstalled() && !isStandalone();
 
@@ -262,14 +266,14 @@ function installAndroidApp() {
 function showAddToHomeInstructions() {
   const overlay = document.querySelector(CONFIG.SELECTORS.OVERLAY);
   const instructions = document.querySelector(CONFIG.SELECTORS.INSTRUCTIONS);
-  
+
   // שמירה שהמשתמש ראה את ההוראות (ככל הנראה יתקין)
   try {
     localStorage.setItem('app-install-clicked', 'true');
   } catch (e) {
     console.log('Failed to save install click flag:', e);
   }
-  
+
   if (overlay && instructions) {
     overlay.style.display = 'block';
     instructions.style.display = 'block';
@@ -279,7 +283,7 @@ function showAddToHomeInstructions() {
 function hideAddToHomeInstructions() {
   const overlay = document.querySelector(CONFIG.SELECTORS.OVERLAY);
   const instructions = document.querySelector(CONFIG.SELECTORS.INSTRUCTIONS);
-  
+
   if (overlay && instructions) {
     overlay.style.display = 'none';
     instructions.style.display = 'none';
@@ -288,7 +292,7 @@ function hideAddToHomeInstructions() {
 
 function hideIOSButtonPermanently() {
   console.log('🚫 User requested to hide iOS button permanently');
-  
+
   // שמירה ב-localStorage שהמשתמש לא רוצה לראות את הכפתור
   try {
     localStorage.setItem('hide-ios-button', 'true');
@@ -296,10 +300,10 @@ function hideIOSButtonPermanently() {
   } catch (e) {
     console.log('Failed to save hide-ios-button flag:', e);
   }
-  
+
   // סגירת חלון ההוראות
   hideAddToHomeInstructions();
-  
+
   // הסתרת הכפתור מיידית
   const iosButton = document.querySelector(CONFIG.SELECTORS.IOS_BUTTON);
   if (iosButton) {
@@ -324,7 +328,7 @@ async function checkAndSaveAppInstalled() {
       console.log('✅ App install flag already exists');
       return;
     }
-    
+
     // בדיקה אם האפליקציה מותקנת
     const installed = await isAppInstalled();
     if (installed) {
@@ -337,12 +341,12 @@ async function checkAndSaveAppInstalled() {
 }
 
 // הוספת event listener לסגירת ההודעות בלחיצה על הרקע
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const overlay = document.querySelector(CONFIG.SELECTORS.OVERLAY);
   if (overlay) {
     overlay.addEventListener('click', hideAddToHomeInstructions);
   }
-  
+
   // בדיקה אוטומטית אם האפליקציה מותקנת
   checkAndSaveAppInstalled();
 });

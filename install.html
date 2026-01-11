@@ -102,13 +102,13 @@
     </style>
 </head>
 
-<body>
+<body data-force-install="true">
 
     <div class="container">
         <img src="icons/icon-512.png" alt="לוגו תחנות גפ״מ" class="logo">
         <h1>תחנות גפ"מ</h1>
         <p class="description">
-            התקן את האפליקציה לגישה מהירה למחירי גפ"מ ותחנות קרובות, גם ללא חיבור לאינטרנט.
+            התקן את האפליקציה להמשך השימוש בגרסא עם העיצוב הישן
         </p>
 
         <!-- Install Buttons -->
@@ -169,7 +169,7 @@
                 const installed = await window.isAppInstalled();
                 if (installed) {
                     document.getElementById('already-installed').style.display = 'block';
-                    return; // Don't show buttons if installed
+                    // return; // Allow buttons to be shown even if installed (requested behavior)
                 }
             }
 
