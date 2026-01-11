@@ -75,15 +75,15 @@ async function showPWAInstallButton() {
     return;
   }
   
-  // באנדרואיד עם שירותי גוגל: אל תציג כפתור PWA, ניתן עדיפות להורדה מהחנות
-  if (isAndroid() && hasGooglePlayServices()) {
-    const pwaInstallButton = document.getElementById('pwa-install');
-    if (pwaInstallButton) {
-      pwaInstallButton.style.display = 'none';
-    }
-    console.log('🚫 PWA Install Button hidden on Android with Google Play Services (preferring native app download)');
-    return;
-  }
+  // באנדרואיד עם שירותי גוגל: הבדיקה בוטלה לבקשת המשתמש כדי לאפשר התקנת PWA ישירה
+  // if (isAndroid() && hasGooglePlayServices()) {
+  //   const pwaInstallButton = document.getElementById('pwa-install');
+  //   if (pwaInstallButton) {
+  //     pwaInstallButton.style.display = 'none';
+  //   }
+  //   console.log('🚫 PWA Install Button hidden on Android with Google Play Services (preferring native app download)');
+  //   return;
+  // }
   
   const pwaInstallButton = document.getElementById('pwa-install');
   

@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>התקנת אפליקציית תחנות גפ"מ</title>
-    
+
     <!-- Meta tags from index.html -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="תחנות גפ״מ">
     <meta name="theme-color" content="#2e7d32">
-    
+
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
-    
+
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -34,7 +35,7 @@
             background: white;
             padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             max-width: 400px;
             width: 100%;
         }
@@ -63,7 +64,8 @@
         .android-install,
         .pwa-install {
             position: static !important;
-            display: none; /* Will be shown by JS */
+            display: none;
+            /* Will be shown by JS */
             width: 100%;
             justify-content: center;
             margin-bottom: 15px;
@@ -71,7 +73,7 @@
             font-size: 16px !important;
             transform: none !important;
         }
-        
+
         /* Ensure flex display when visible */
         .ios-add-to-home[style*="display: flex"],
         .android-install[style*="display: flex"],
@@ -99,6 +101,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
@@ -114,10 +117,7 @@
             התקן אפליקציה
         </button>
 
-        <button id="android-install" class="android-install" onclick="installAndroidApp()">
-            <span class="icon">📲</span>
-            התקן מחנות Google Play
-        </button>
+
 
         <button id="ios-add-to-home" class="ios-add-to-home" onclick="showAddToHomeInstructions()">
             <span class="icon">📱</span>
@@ -134,14 +134,15 @@
     <div class="add-to-home-instructions" id="add-to-home-instructions" style="display: none;">
         <h3>הוסף למסך הבית</h3>
         <p>1. לחץ על כפתור השיתוף
-            <img src="https://raw.githubusercontent.com/guzsbhtk/lpg-stations/refs/heads/main/icons/share.jpeg" 
-                 alt="כפתור שיתוף" 
-                 style="display: inline-block; vertical-align: middle; margin: 0 4px; width: 24px; height: 24px; border-radius: 4px;">
+            <img src="https://raw.githubusercontent.com/guzsbhtk/lpg-stations/refs/heads/main/icons/share.jpeg"
+                alt="כפתור שיתוף"
+                style="display: inline-block; vertical-align: middle; margin: 0 4px; width: 24px; height: 24px; border-radius: 4px;">
         </p>
         <p>2. בחר "הוסף למסך הבית" או "Add to Home Screen"</p>
         <p>3. לחץ על "הוסף" או "Add"</p>
         <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
-            <button onclick="hideAddToHomeInstructions()" style="background: #007AFF; flex: 1; color: white; border: none; padding: 10px; border-radius: 6px;">הבנתי</button>
+            <button onclick="hideAddToHomeInstructions()"
+                style="background: #007AFF; flex: 1; color: white; border: none; padding: 10px; border-radius: 6px;">הבנתי</button>
         </div>
     </div>
 
@@ -149,20 +150,20 @@
     <script src="js/constants.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/device-detection.js"></script>
-    
+
     <!-- Inline script to mock missing UI dependencies if needed or just load pwa-install.js -->
     <script>
         // Mock UI functions if pwa-install.js relies on them and they aren't loaded
         // However, looking at pwa-install.js, it seems self-contained mostly, accessing DOM elements we provided.
         // It might use some global state, let's load it and see.
     </script>
-    
+
     <script src="js/pwa-install.js"></script>
 
     <script>
         // Initialize install buttons logic
         document.addEventListener('DOMContentLoaded', async () => {
-            
+
             // Check if installed
             if (window.isAppInstalled) {
                 const installed = await window.isAppInstalled();
@@ -174,17 +175,18 @@
 
             // Trigger button visibility checks
             // These functions are from pwa-install.js and operate on global IDs
-            
+
             // Allow some time for pwa-install.js to run its own listeners/checks
             setTimeout(() => {
                 if (window.showPWAInstallButton) window.showPWAInstallButton();
                 if (window.showAndroidInstallButton) window.showAndroidInstallButton();
                 if (window.showIOSAddToHomeButton) window.showIOSAddToHomeButton();
-                
+
                 // Fallback: If no buttons are shown after check, and not installed, maybe show a generic message?
                 // For now, let's trust the logic.
             }, 500);
         });
     </script>
 </body>
+
 </html>
