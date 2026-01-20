@@ -308,22 +308,38 @@ function parseStations(table) {
 
     let date = null;
 
-    // נסה לפרק תאריך מ-GViz format
-    const gvizMatch = typeof raw === "string" && raw.match(/Date\((\d+),(\d+),(\d+)/);
+    // נסה לפרק תאריך מ-GViz format עם שעה
+    const gvizMatch = typeof raw === "string" && raw.match(/Date\((\d+),(\d+),(\d+),(\d+),(\d+),(\d+)\)/);
     if (gvizMatch) {
       const year = parseInt(gvizMatch[1]);
       const month = parseInt(gvizMatch[2]); // gviz חודש 0-based
       const day = parseInt(gvizMatch[3]);
-      date = new Date(year, month, day);
+      const hours = parseInt(gvizMatch[4]);
+      const minutes = parseInt(gvizMatch[5]);
+      const seconds = parseInt(gvizMatch[6]);
+      date = new Date(year, month, day, hours, minutes, seconds);
     } else if (typeof raw === "string") {
-      // נסה לפרק dd/mm/yyyy
-      const parts = raw.match(/(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})/);
-      if (parts) {
-        const day = parseInt(parts[1]);
-        const month = parseInt(parts[2]) - 1; // JavaScript חודש 0-based
-        let year = parseInt(parts[3]);
+      // נסה לפרק dd/mm/yyyy HH:MM:SS
+      const fullMatch = raw.match(/(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})\s+(\d{1,2}):(\d{1,2}):(\d{1,2})/);
+      if (fullMatch) {
+        const day = parseInt(fullMatch[1]);
+        const month = parseInt(fullMatch[2]) - 1; // JavaScript חודש 0-based
+        let year = parseInt(fullMatch[3]);
         if (year < 100) year += 2000; // המר שנה דו-ספרתית
-        date = new Date(year, month, day);
+        const hours = parseInt(fullMatch[4]);
+        const minutes = parseInt(fullMatch[5]);
+        const seconds = parseInt(fullMatch[6]);
+        date = new Date(year, month, day, hours, minutes, seconds);
+      } else {
+        // נסה לפרק רק תאריך dd/mm/yyyy (ללא שעה)
+        const dateMatch = raw.match(/(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})/);
+        if (dateMatch) {
+          const day = parseInt(dateMatch[1]);
+          const month = parseInt(dateMatch[2]) - 1; // JavaScript חודש 0-based
+          let year = parseInt(dateMatch[3]);
+          if (year < 100) year += 2000; // המר שנה דו-ספרתית
+          date = new Date(year, month, day);
+        }
       }
     }
 
