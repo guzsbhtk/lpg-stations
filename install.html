@@ -161,6 +161,15 @@
     <script src="js/pwa-install.js"></script>
 
     <script>
+        // Register service worker to enable beforeinstallprompt event
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(() => console.log('Service Worker registered successfully'))
+                .catch(err => console.error('Service Worker registration failed:', err));
+        }
+    </script>
+
+    <script>
         // Initialize install buttons logic
         document.addEventListener('DOMContentLoaded', () => {
             // Don't show the PWA install button immediately - wait for beforeinstallprompt event
