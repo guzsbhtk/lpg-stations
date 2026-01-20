@@ -144,6 +144,10 @@ function installPWA() {
       }
       deferredPrompt = null;
     });
+  } else {
+    // הצגת הודעה למשתמש אם לא ניתן להתקין
+    alert('לא ניתן להתקין את האפליקציה. ודא שאתה משתמש בדפדפן שתומך בהתקנת PWA.');
+    console.log('❌ Install prompt not available.');
   }
 }
 
