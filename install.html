@@ -163,16 +163,24 @@
     <script>
         // Initialize install buttons logic
         document.addEventListener('DOMContentLoaded', () => {
-            // Always show the PWA install button
-            const pwaBtn = document.getElementById('pwa-install');
-            if (pwaBtn) pwaBtn.style.display = 'flex';
+            // Don't show the PWA install button immediately - wait for beforeinstallprompt event
+            // The pwa-install.js will handle showing it when appropriate
 
-            // Remove device-specific checks and ensure visibility
-            const iosBtn = document.getElementById('ios-add-to-home');
-            if (iosBtn) iosBtn.style.display = 'none'; // Hide iOS-specific button
+            // Check if we're on iOS and should show the iOS button instead
+            if (typeof isIOS === 'function' && typeof isMobile === 'function' && typeof isStandalone === 'function') {
+                if (isMobile() && isIOS() && !isStandalone()) {
+                    const iosBtn = document.getElementById('ios-add-to-home');
+                    if (iosBtn) iosBtn.style.display = 'flex';
+                }
+            }
 
-            const androidBtn = document.getElementById('android-install');
-            if (androidBtn) androidBtn.style.display = 'none'; // Hide Android-specific button
+            // On the install page, manually trigger the PWA button display after a short delay
+            // This allows the beforeinstallprompt event to fire first if available
+            setTimeout(() => {
+                if (typeof showPWAInstallButton === 'function') {
+                    showPWAInstallButton();
+                }
+            }, 500);
         });
     </script>
 </body>

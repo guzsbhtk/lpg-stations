@@ -80,7 +80,7 @@ async function showPWAInstallButton() {
 
   // באנדרואיד עם שירותי גוגל: אל תציג כפתור PWA אם יש כפתור לחנות
   const androidStoreButton = document.getElementById('android-install');
-  if (isAndroid() && hasGooglePlayServices() && androidStoreButton) {
+  if (isAndroid() && hasGooglePlayServices() && androidStoreButton && !forceInstall) {
     const pwaInstallButton = document.getElementById('pwa-install');
     if (pwaInstallButton) {
       pwaInstallButton.style.display = 'none';
@@ -95,7 +95,7 @@ async function showPWAInstallButton() {
   const isAlreadyInstalled = isStandalone();
 
   // באנדרואיד - הצג PWA רק אם כפתור החנות לא מוצג
-  if (isAndroid() && isMobile()) {
+  if (isAndroid() && isMobile() && !forceInstall) {
     const androidInstallButton = document.getElementById('android-install');
     if (androidInstallButton && androidInstallButton.style.display === 'flex') {
       if (pwaInstallButton) pwaInstallButton.style.display = 'none';
@@ -108,20 +108,22 @@ async function showPWAInstallButton() {
     isMobile: isMobile(),
     hasDeferredPrompt: !!deferredPrompt,
     isAlreadyInstalled,
+    forceInstall,
     standalone: window.navigator.standalone,
     userAgent: window.navigator.userAgent
   });
 
   // הצג את הכפתור רק אם זה מכשיר נייד, יש PWA prompt והאפליקציה לא מותקנת (או שמכריחים)
-  if (pwaInstallButton && isMobile() && deferredPrompt && (!isAlreadyInstalled || forceInstall)) {
+  // בעמוד force-install, הצג את הכפתור גם בלי deferredPrompt (יוצג הודעת שגיאה מתאימה)
+  if (pwaInstallButton && isMobile() && (deferredPrompt || forceInstall) && (!isAlreadyInstalled || forceInstall)) {
     pwaInstallButton.style.display = 'flex';
     console.log('✅ PWA Install Button should be visible now');
   } else {
     console.log('❌ PWA Install Button not shown because:');
     if (!pwaInstallButton) console.log('- Button element not found');
     if (!isMobile()) console.log('- Not mobile device');
-    if (!deferredPrompt) console.log('- No PWA install prompt available');
-    if (isAlreadyInstalled) console.log('- App already installed');
+    if (!deferredPrompt && !forceInstall) console.log('- No PWA install prompt available');
+    if (isAlreadyInstalled && !forceInstall) console.log('- App already installed');
   }
 }
 
@@ -145,8 +147,13 @@ function installPWA() {
       deferredPrompt = null;
     });
   } else {
-    // הצגת הודעה למשתמש אם לא ניתן להתקין
-    alert('לא ניתן להתקין את האפליקציה. ודא שאתה משתמש בדפדפן שתומך בהתקנת PWA.');
+    // הצגת הודעה מועילה יותר למשתמש
+    const isOnInstallPage = document.body.getAttribute('data-force-install') === 'true';
+    if (isOnInstallPage) {
+      alert('להתקנת האפליקציה:\n\n1. לחץ על תפריט הדפדפן (שלוש נקודות)\n2. בחר "הוסף לדף הבית" או "Add to Home Screen"\n3. אשר את ההתקנה\n\nאם האפשרות לא מופיעה, ייתכן שהאפליקציה כבר מותקנת או שהדפדפן לא תומך בהתקנה.');
+    } else {
+      alert('לא ניתן להתקין את האפליקציה. ודא שאתה משתמש בדפדפן שתומך בהתקנת PWA.');
+    }
     console.log('❌ Install prompt not available.');
   }
 }
