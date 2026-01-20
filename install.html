@@ -162,29 +162,17 @@
 
     <script>
         // Initialize install buttons logic
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
+            // Always show the PWA install button
+            const pwaBtn = document.getElementById('pwa-install');
+            if (pwaBtn) pwaBtn.style.display = 'flex';
 
-            // Check if installed
-            if (window.isAppInstalled) {
-                const installed = await window.isAppInstalled();
-                if (installed) {
-                    document.getElementById('already-installed').style.display = 'block';
-                    // return; // Allow buttons to be shown even if installed (requested behavior)
-                }
-            }
+            // Remove device-specific checks and ensure visibility
+            const iosBtn = document.getElementById('ios-add-to-home');
+            if (iosBtn) iosBtn.style.display = 'none'; // Hide iOS-specific button
 
-            // Trigger button visibility checks
-            // These functions are from pwa-install.js and operate on global IDs
-
-            // Allow some time for pwa-install.js to run its own listeners/checks
-            setTimeout(() => {
-                if (window.showPWAInstallButton) window.showPWAInstallButton();
-                if (window.showAndroidInstallButton) window.showAndroidInstallButton();
-                if (window.showIOSAddToHomeButton) window.showIOSAddToHomeButton();
-
-                // Fallback: If no buttons are shown after check, and not installed, maybe show a generic message?
-                // For now, let's trust the logic.
-            }, 500);
+            const androidBtn = document.getElementById('android-install');
+            if (androidBtn) androidBtn.style.display = 'none'; // Hide Android-specific button
         });
     </script>
 </body>
