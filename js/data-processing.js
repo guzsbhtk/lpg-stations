@@ -256,6 +256,10 @@ function parseStations(table) {
   }
   const idxCoords = findIdx(["coords", "Latitude"]);
 
+  // עמודות מצב גז (L ו-M)
+  const idxGasStatus = 11; // עמודה L (אינדקס 11)
+  const idxGasDate = 12; // עמודה M (אינדקס 12)
+
   if (idxName === -1 || idxPrice === -1 || idxCoords === -1) {
     throw new Error("לא נמצאו כל העמודות הנדרשות בגיליון");
   }
@@ -296,6 +300,48 @@ function parseStations(table) {
     return `${monthStr}.${yearStr}`;
   }
 
+  // פונקציה לחישוב שעות מאז עדכון מצב הגז
+  function parseGasUpdateDate(cell) {
+    if (!cell) return null;
+    const raw = cell.f || cell.v;
+    if (!raw) return null;
+
+    let date = null;
+
+    // נסה לפרק תאריך מ-GViz format
+    const gvizMatch = typeof raw === "string" && raw.match(/Date\((\d+),(\d+),(\d+)/);
+    if (gvizMatch) {
+      const year = parseInt(gvizMatch[1]);
+      const month = parseInt(gvizMatch[2]); // gviz חודש 0-based
+      const day = parseInt(gvizMatch[3]);
+      date = new Date(year, month, day);
+    } else if (typeof raw === "string") {
+      // נסה לפרק dd/mm/yyyy
+      const parts = raw.match(/(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})/);
+      if (parts) {
+        const day = parseInt(parts[1]);
+        const month = parseInt(parts[2]) - 1; // JavaScript חודש 0-based
+        let year = parseInt(parts[3]);
+        if (year < 100) year += 2000; // המר שנה דו-ספרתית
+        date = new Date(year, month, day);
+      }
+    }
+
+    // fallback - נסה ישירות דרך Date constructor
+    if (!date || isNaN(date)) {
+      date = new Date(raw);
+    }
+
+    if (!date || isNaN(date)) return null;
+
+    // חשב הפרש שעות
+    const now = new Date();
+    const diffMs = now - date;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+    return diffHours >= 0 ? diffHours : null;
+  }
+
   return table.rows
     .map((row, idx) => {
       const cells = row.c;
@@ -305,12 +351,38 @@ function parseStations(table) {
       const coordsStr = cells[idxCoords]?.v;
       const date = idxDate !== -1 ? formatDateCell(cells[idxDate]) : "";
       const estimatedPrice = idxEstimatedPrice !== -1 ? cells[idxEstimatedPrice]?.v : null;
+
+      // חילוץ נתוני מצב גז
+      let gasAvailable = null;
+      let gasUpdateHours = null;
+
+      if (idxGasStatus < cells.length && idxGasDate < cells.length) {
+        const gasStatusRaw = cells[idxGasStatus]?.v;
+        const gasUpdateCell = cells[idxGasDate];
+
+        // חשב שעות מאז עדכון
+        gasUpdateHours = parseGasUpdateDate(gasUpdateCell);
+
+        // רק אם העדכון בתוך 48 שעות - שמור את הנתונים
+        if (gasUpdateHours !== null && gasUpdateHours <= 48) {
+          // המר X/V לבוליאני
+          if (gasStatusRaw === "V" || gasStatusRaw === "v") {
+            gasAvailable = true;
+          } else if (gasStatusRaw === "X" || gasStatusRaw === "x") {
+            gasAvailable = false;
+          }
+        }
+      }
+
       if (!name || !price || !coordsStr) return null;
       const [lat, lng] = coordsStr.split(/,\s*/).map(Number);
       if (isNaN(lat) || isNaN(lng)) return null;
       const rowNumber = idx + 2; // שורה בפועל בגיליון (כולל כותרת)
       const rowCode = `${rowNumber}${rowNumber * rowNumber}`; // שרשור n ו-n^2
-      const station = { name, city, price, date, lat, lng, rowNumber, rowCode, estimatedPrice };
+      const station = {
+        name, city, price, date, lat, lng, rowNumber, rowCode, estimatedPrice,
+        gasAvailable, gasUpdateHours
+      };
       return validateStation(station) ? station : null;
     })
     .filter(Boolean);

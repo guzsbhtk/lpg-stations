@@ -3,18 +3,18 @@
 // בודק אם תאריך עודכן החודש הנוכחי
 function isUpdatedThisMonth(dateStr) {
   if (!dateStr) return false;
-  
+
   // הפורמט הוא MM.YY (למשל "12.25")
   const parts = dateStr.split('.');
   if (parts.length !== 2) return false;
-  
+
   const month = parseInt(parts[0], 10);
   const year = parseInt(parts[1], 10);
-  
+
   const now = new Date();
   const currentMonth = now.getMonth() + 1; // 1-12
   const currentYear = now.getFullYear() % 100; // רק 2 ספרות אחרונות
-  
+
   return month === currentMonth && year === currentYear;
 }
 
@@ -170,25 +170,35 @@ function updateMapMarkers(stationsToShow, userPos) {
       const isCurrentMonth = st.date && isUpdatedThisMonth(st.date);
       const hasEstimatedPrice = st.estimatedPrice && typeof st.estimatedPrice === 'number';
       const shouldShowEstimated = !isCurrentMonth && hasEstimatedPrice;
-      
+
       let priceDisplay, dateDisplay;
-      
+
       if (shouldShowEstimated) {
         priceDisplay = `<p class="price estimated-price">₪${escapeHTML(st.estimatedPrice)}</p>`;
         dateDisplay = `<p class="date estimated-label">💡 מחיר משוער</p>` +
           (st.date ? `<p class="date old-price-info">מחיר ישן: ₪${escapeHTML(st.price)} (${escapeHTML(st.date)})</p>` : '');
       } else {
         priceDisplay = `<p class="price">₪${escapeHTML(st.price)}</p>`;
-        dateDisplay = isCurrentMonth 
+        dateDisplay = isCurrentMonth
           ? `<p class="date date-current-month">✅ עודכן החודש</p>`
           : st.date ? `<p class="date">🕒 עודכן: ${escapeHTML(st.date)}</p>` : '';
       }
-      
+
+      // הוסף מצב גז אם קיים
+      let gasStatusDisplay = '';
+      if (st.gasAvailable !== null && st.gasUpdateHours !== null) {
+        const icon = st.gasAvailable ? '✓' : '✗';
+        const statusText = st.gasAvailable ? 'יש גז בתחנה' : 'אין גז בתחנה';
+        const statusClass = st.gasAvailable ? 'gas-available' : 'gas-unavailable';
+        gasStatusDisplay = `<p class="gas-status ${statusClass}">${icon} ${statusText}, עודכן לפני ${st.gasUpdateHours} שעות</p>`;
+      }
+
       const popupContent = `
         <h3>${escapeHTML(st.name)}</h3>
         <p>${escapeHTML(st.city || '')}</p>
         ${priceDisplay}
         ${dateDisplay}
+        ${gasStatusDisplay}
         ${distanceText}
         <a href="https://waze.com/ul?ll=${st.lat}%2C${st.lng}&navigate=yes" target="_blank" rel="noopener noreferrer">🚗 נווט עם Waze</a>
       `;
@@ -292,23 +302,23 @@ function renderStations(stations, userPos) {
 
     const priceEl = document.createElement("p");
     priceEl.className = "price";
-    
+
     // בדיקה האם המחיר מעודכן החודש הנוכחי
     const isCurrentMonth = st.date && isUpdatedThisMonth(st.date);
     const hasEstimatedPrice = st.estimatedPrice && typeof st.estimatedPrice === 'number';
-    
+
     // אם המחיר לא מהחודש הנוכחי ויש מחיר משוער - נציג את המשוער
     const shouldShowEstimated = !isCurrentMonth && hasEstimatedPrice;
-    
+
     if (shouldShowEstimated) {
       priceEl.textContent = `₪${st.estimatedPrice}`;
       priceEl.classList.add('estimated-price');
-      
+
       const estimatedLabel = document.createElement("span");
       estimatedLabel.className = "date estimated-label";
       estimatedLabel.innerHTML = '  <span class="tooltip-trigger">מחיר משוער</span>';
       priceEl.appendChild(estimatedLabel);
-      
+
       // הוסף div נסתר עם המחיר הישן
       const oldPriceDiv = document.createElement("div");
       oldPriceDiv.className = "old-price-tooltip";
@@ -326,6 +336,18 @@ function renderStations(stations, userPos) {
     }
 
     div.appendChild(priceEl);
+
+    // הצגת מצב גז (רק אם עודכן ב-48 שעות האחרונות)
+    if (st.gasAvailable !== null && st.gasUpdateHours !== null) {
+      const gasStatusEl = document.createElement("p");
+      gasStatusEl.className = st.gasAvailable ? "gas-status gas-available" : "gas-status gas-unavailable";
+
+      const icon = st.gasAvailable ? "✓" : "✗";
+      const statusText = st.gasAvailable ? "יש גז בתחנה" : "אין גז בתחנה";
+
+      gasStatusEl.textContent = `${icon} ${statusText}, עודכן לפני ${st.gasUpdateHours} שעות`;
+      div.appendChild(gasStatusEl);
+    }
 
     if (userPos) {
       const dist = st.distance !== undefined ? st.distance : distanceKm(userPos.lat, userPos.lng, st.lat, st.lng);
@@ -359,7 +381,7 @@ function renderStations(stations, userPos) {
       const isCurrentMonth = st.date && isUpdatedThisMonth(st.date);
       const hasEstimatedPrice = st.estimatedPrice && typeof st.estimatedPrice === 'number';
       const shouldShowEstimated = !isCurrentMonth && hasEstimatedPrice;
-      
+
       // כפתור "עדכן מחיר" רגיל
       const updateLink = document.createElement("a");
       updateLink.className = "update";
@@ -368,7 +390,7 @@ function renderStations(stations, userPos) {
       updateLink.rel = "noopener noreferrer";
       updateLink.textContent = "עדכן מחיר";
       actions.appendChild(updateLink);
-      
+
       // כפתור "אשר מחיר" אם יש מחיר משוער
       if (shouldShowEstimated && CONFIG.FORM_ENTRIES && CONFIG.FORM_ENTRIES.PRICE) {
         const confirmLink = document.createElement("a");
@@ -645,7 +667,7 @@ function setupControls() {
   if (closeMapButton) {
     closeMapButton.addEventListener('click', closeMap);
   }
-  
+
   // הוסף מאזין לאירועי מחירים משוערים
   setupEstimatedPriceTooltips();
 }
@@ -655,12 +677,12 @@ function setupEstimatedPriceTooltips() {
   // נשתמש ב-event delegation כי התחנות נוצרות דינמית
   const stationsContainer = appState.getElement('stationsContainer');
   if (!stationsContainer) return;
-  
+
   // הסר מאזינים קודמים (אם יש)
   stationsContainer.removeEventListener('click', handleEstimatedPriceClick);
   stationsContainer.removeEventListener('mouseenter', handleEstimatedPriceHover, true);
   stationsContainer.removeEventListener('mouseleave', handleEstimatedPriceLeave, true);
-  
+
   // הוסף מאזינים חדשים
   stationsContainer.addEventListener('click', handleEstimatedPriceClick);
   stationsContainer.addEventListener('mouseenter', handleEstimatedPriceHover, true);
@@ -671,7 +693,7 @@ function setupEstimatedPriceTooltips() {
 function handleEstimatedPriceClick(e) {
   const priceEl = e.target.closest('.estimated-price');
   if (!priceEl) return;
-  
+
   priceEl.classList.toggle('show-old-price');
 }
 
@@ -679,7 +701,7 @@ function handleEstimatedPriceClick(e) {
 function handleEstimatedPriceHover(e) {
   const priceEl = e.target.closest('.estimated-price');
   if (!priceEl) return;
-  
+
   priceEl.classList.add('show-old-price');
 }
 
@@ -687,7 +709,7 @@ function handleEstimatedPriceHover(e) {
 function handleEstimatedPriceLeave(e) {
   const priceEl = e.target.closest('.estimated-price');
   if (!priceEl) return;
-  
+
   // אל תסיר אם נלחץ (toggle נשאר)
   if (!priceEl.classList.contains('clicked')) {
     priceEl.classList.remove('show-old-price');

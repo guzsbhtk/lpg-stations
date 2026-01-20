@@ -56,8 +56,10 @@ header {
 #close-map-btn {
   position: absolute;
   top: 15px;
-  left: 60px; /* RTL - הוזז ימינה כדי לא להסתיר את כפתור ההגדלה */
-  z-index: 2001; /* מעל המפה */
+  left: 60px;
+  /* RTL - הוזז ימינה כדי לא להסתיר את כפתור ההגדלה */
+  z-index: 2001;
+  /* מעל המפה */
   background: #fff;
   color: #333;
   border: 2px solid #aaa;
@@ -84,7 +86,8 @@ header {
 #map-controls {
   position: absolute;
   top: 15px;
-  right: 15px; /* RTL - יהיה בצד ימין */
+  right: 15px;
+  /* RTL - יהיה בצד ימין */
   z-index: 2001;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
@@ -163,9 +166,12 @@ header {
 }
 
 @keyframes pulse-user {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 2px 8px rgba(33, 150, 243, 0.5), 0 0 0 2px rgba(33, 150, 243, 0.3);
   }
+
   50% {
     box-shadow: 0 2px 12px rgba(33, 150, 243, 0.7), 0 0 0 6px rgba(33, 150, 243, 0.2);
   }
@@ -179,7 +185,7 @@ header {
     min-width: 200px;
     padding: 12px;
   }
-  
+
   #close-map-btn {
     top: 10px;
     left: 50px;
@@ -280,7 +286,7 @@ main {
 }
 
 /* Empty states */
-#stations > p {
+#stations>p {
   text-align: center;
   color: #666;
   font-style: italic;
@@ -425,6 +431,22 @@ body.high-contrast .leaflet-popup-content a {
   color: #2e7d32 !important;
 }
 
+/* ניגודיות גבוהה למצב גז */
+body.high-contrast .station .gas-available,
+body.high-contrast .leaflet-popup-content .gas-available {
+  background: #000 !important;
+  color: #0f0 !important;
+  border-color: #0f0 !important;
+}
+
+body.high-contrast .station .gas-unavailable,
+body.high-contrast .leaflet-popup-content .gas-unavailable {
+  background: #000 !important;
+  color: #f00 !important;
+  border-color: #f00 !important;
+}
+
+
 
 /* נגישות - רווחים מורחבים */
 body.increased-spacing {
@@ -485,6 +507,51 @@ body.increased-spacing .station .actions a {
   font-weight: 600;
 }
 
+/* מצב גז */
+.station .gas-status {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.station .gas-available {
+  color: #2e7d32;
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+}
+
+.station .gas-unavailable {
+  color: #c62828;
+  background: #ffebee;
+  border: 1px solid #ffcdd2;
+}
+
+/* מצב גז בפופ-אפ של המפה */
+.leaflet-popup-content .gas-status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 0.25rem;
+}
+
+.leaflet-popup-content .gas-available {
+  color: #2e7d32;
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+}
+
+.leaflet-popup-content .gas-unavailable {
+  color: #c62828;
+  background: #ffebee;
+  border: 1px solid #ffcdd2;
+}
+
+
 /* מחיר משוער */
 .station .estimated-price {
   position: relative;
@@ -529,6 +596,7 @@ body.increased-spacing .station .actions a {
     opacity: 0;
     transform: translateY(-5px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -612,6 +680,7 @@ a.maps .icon {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -643,9 +712,11 @@ body.high-contrast #distanceRange[data-search-active="true"] {
   0% {
     content: '  .';
   }
+
   33% {
     content: ' ..';
   }
+
   66% {
     content: '...';
   }
