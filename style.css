@@ -446,6 +446,18 @@ body.high-contrast .leaflet-popup-content .gas-unavailable {
   border-color: #f00 !important;
 }
 
+/* ניגודיות גבוהה לכפתורי עדכון גז */
+body.high-contrast .station .actions a.gas-yes {
+  background: #0f0 !important;
+  color: #000 !important;
+}
+
+body.high-contrast .station .actions a.gas-no {
+  background: #f00 !important;
+  color: #000 !important;
+}
+
+
 
 
 /* נגישות - רווחים מורחבים */
@@ -648,6 +660,20 @@ a.waze .icon {
   background: #2e7d32;
   font-weight: 600;
 }
+
+.station .actions a.gas-update {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.station .actions a.gas-yes {
+  background: #2e7d32;
+}
+
+.station .actions a.gas-no {
+  background: #c62828;
+}
+
 
 .station .actions {
   display: flex;

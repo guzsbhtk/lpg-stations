@@ -7,25 +7,25 @@ const CONFIG = {
   GEOLOCATION_MAX_AGE_HIGH: 30000,
   GEOLOCATION_MAX_AGE_LOW: 600000,
   GEOLOCATION_REFRESH_MS: 60000,
-  
+
   // Timeouts
   FETCH_TIMEOUT: 15000,
   GEOLOCATION_RETRY_DELAY: 1000,
   UI_DEBUG_DELAY: 100,
-  
+
   // Search & Filtering (חיפוש וסינון)
   SEARCH: {
     MIN_LENGTH_FOR_FUZZY: 3, // אורך מינימלי לחיפוש עם סובלנות לשגיאות
     MAX_LEVENSHTEIN_DISTANCE: 3, // מספר שגיאות מקסימלי בחיפוש (גמישות)
   },
-  
+
   // Security (אבטחה)
   SECURITY: {
     // חישוב row code: rowNumber + (rowNumber * rowNumber)
-    DAY_SUFFIX_MULTIPLIER: 2, 
+    DAY_SUFFIX_MULTIPLIER: 2,
     DAY_SUFFIX_PREFIX: '.' // נקודה לפני
   },
-  
+
   // DOM selectors
   SELECTORS: {
     STATUS: "#status",
@@ -39,14 +39,14 @@ const CONFIG = {
     PWA_BUTTON: "#pwa-install",
     OVERLAY: "#overlay",
     INSTRUCTIONS: "#add-to-home-instructions",
-    
+
     // סלקטורים למפת האוברליי
     MAP_OVERLAY: "#map-overlay",
-    MAP_CONTAINER: "#map", 
+    MAP_CONTAINER: "#map",
     OPEN_MAP_BUTTON: "#open-map-btn",
     CLOSE_MAP_BUTTON: "#close-map-btn"
   },
-  
+
   // Map Configuration
   MAP: {
     DEFAULT_ZOOM: 8,
@@ -55,20 +55,23 @@ const CONFIG = {
     TILE_URL: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     TILE_ATTRIBUTION: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   },
-  
+
   // URLs
   URLS: {
     SHEET: "https://docs.google.com/spreadsheets/d/1FDx3CdFpCLxQAKFRqQ1DpiF8l6k46L6M6hWoahuGB30/gviz/tq?tqx=out:json",
     UPDATE_FORM_BASE: "https://docs.google.com/forms/d/e/1FAIpQLSdVxdEhqTyuI9wytoStlha4twnct3misgfuzZj04Fx6W9bvaQ/viewform?usp=pp_url&entry.1345625893=",
+    GAS_STATUS_FORM_BASE: "https://docs.google.com/forms/d/e/1FAIpQLSfsaEPFIpBkwCpBtQIurIHkcnjYswLliICcbFiHgKmou7tunw/viewform?usp=pp_url&entry.1792335987=",
     PLAY_STORE: "https://play.google.com/store/apps/details?id=io.github.guzsbhtk.twa"
   },
-  
+
   // Form Entry IDs (מזהי שדות בטופס Google Forms)
   FORM_ENTRIES: {
-    STATION_ID: "1345625893",  // שדה מזהה התחנה (rowCode)
-    PRICE: "386668135"  // שדה המחיר בטופס
+    STATION_ID: "1345625893",  // שדה מזהה התחנה (rowCode) בטופס עדכון מחיר
+    PRICE: "386668135",  // שדה המחיר בטופס עדכון מחיר
+    GAS_STATION_ID: "1792335987",  // שדה מזהה התחנה בטופס מצב גז
+    GAS_STATUS: "259604209"  // שדה מצב הגז (V/X)
   },
-  
+
   // Messages
   MESSAGES: {
     NO_STATIONS: "אין תחנות להצגה",
@@ -91,6 +94,6 @@ const GEOLOCATION_ERRORS = {
 // קבועי הודעות שגיאה למשתמש
 const USER_ERROR_MESSAGES = {
   1: "לא אושרה גישה למיקום",
-  2: "לא התקבלו נתוני מיקום", 
+  2: "לא התקבלו נתוני מיקום",
   3: "הבקשה לקבלת מיקום חרגה ממגבלת הזמן"
 };

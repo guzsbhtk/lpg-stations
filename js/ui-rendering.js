@@ -403,6 +403,30 @@ function renderStations(stations, userPos) {
         confirmLink.title = `אשר מחיר משוער: ₪${st.estimatedPrice}`;
         actions.appendChild(confirmLink);
       }
+
+      // כפתורי עדכון מצב גז
+      const GAS_FORM_BASE = CONFIG.URLS.GAS_STATUS_FORM_BASE;
+      const GAS_STATUS_ENTRY = CONFIG.FORM_ENTRIES.GAS_STATUS;
+
+      // כפתור "יש גז"
+      const hasGasLink = document.createElement("a");
+      hasGasLink.className = "gas-update gas-yes";
+      hasGasLink.href = GAS_FORM_BASE + st.rowCode + daySuffix + `&entry.${GAS_STATUS_ENTRY}=V`;
+      hasGasLink.target = "_blank";
+      hasGasLink.rel = "noopener noreferrer";
+      hasGasLink.textContent = "✓ יש גז";
+      hasGasLink.title = "עדכן שיש גז בתחנה";
+      actions.appendChild(hasGasLink);
+
+      // כפתור "אין גז"
+      const noGasLink = document.createElement("a");
+      noGasLink.className = "gas-update gas-no";
+      noGasLink.href = GAS_FORM_BASE + st.rowCode + daySuffix + `&entry.${GAS_STATUS_ENTRY}=X`;
+      noGasLink.target = "_blank";
+      noGasLink.rel = "noopener noreferrer";
+      noGasLink.textContent = "✗ אין גז";
+      noGasLink.title = "עדכן שאין גז בתחנה";
+      actions.appendChild(noGasLink);
     }
 
     div.appendChild(actions);
