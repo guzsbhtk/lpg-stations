@@ -160,7 +160,24 @@ function updateMapMarkers(stationsToShow, userPos) {
 
   stationsToShow.forEach(st => {
     try {
-      const marker = L.marker([st.lat, st.lng]);
+      let markerStatusClass = 'gas-unknown';
+      let markerStatusText = 'מצב גז לא עודכן ב-48 השעות האחרונות';
+      if (st.gasAvailable === true && st.gasUpdateHours !== null) {
+        markerStatusClass = 'gas-available';
+        markerStatusText = 'יש גז בתחנה (עודכן ב-48 השעות האחרונות)';
+      } else if (st.gasAvailable === false && st.gasUpdateHours !== null) {
+        markerStatusClass = 'gas-unavailable';
+        markerStatusText = 'אין גז בתחנה (עודכן ב-48 השעות האחרונות)';
+      }
+
+      const marker = L.marker([st.lat, st.lng], {
+        icon: L.divIcon({
+          className: 'station-marker-wrapper',
+          html: `<div class="station-marker-dot ${markerStatusClass}" title="${markerStatusText}"></div>`,
+          iconSize: [18, 18],
+          iconAnchor: [9, 9]
+        })
+      });
 
       // הוסף מרחק אם יש מיקום משתמש
       const distanceText = userPos && st.distance !== undefined
@@ -480,6 +497,10 @@ function applyFilters() {
 
   const sortBy = sortSelect.value;
 
+  if (sortBy === "gas-available") {
+    list = list.filter((st) => st.gasAvailable === true && st.gasUpdateHours !== null);
+  }
+
   if (term) {
     if (sortBy === "price") {
       list = list.slice().sort((a, b) => {
@@ -491,12 +512,23 @@ function applyFilters() {
         if (a.searchScore !== b.searchScore) return b.searchScore - a.searchScore;
         return a.distance - b.distance;
       });
+    } else if (sortBy === "gas-available") {
+      list = list.slice().sort((a, b) => {
+        if (a.searchScore !== b.searchScore) return b.searchScore - a.searchScore;
+        if (userPosGlobal) return a.distance - b.distance;
+        return parseFloat(a.price) - parseFloat(b.price);
+      });
     }
   } else {
     if (sortBy === "price") {
       list = list.slice().sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
     } else if (sortBy === "distance" && userPosGlobal) {
       list = list.slice().sort((a, b) => a.distance - b.distance);
+    } else if (sortBy === "gas-available") {
+      list = list.slice().sort((a, b) => {
+        if (userPosGlobal) return a.distance - b.distance;
+        return parseFloat(a.price) - parseFloat(b.price);
+      });
     }
   }
 
